@@ -1,0 +1,15 @@
+graphviz
+wheel
+latex
+numpydoc
+sphinx-rtd-theme
+numpy
+nptyping
+scipy
+matplotlib
+tqdm
+cython
+PyYAML
+deepdish
+git+https://gitlab.com/FARMSIM/farms_pylog.git
+pywavefront

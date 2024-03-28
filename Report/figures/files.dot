@@ -1,0 +1,48 @@
+digraph G {
+    graph[rankdir=LR, center=true]
+    node [
+          color="black",
+          fontsize=20,
+          shape=box
+          ]
+    "project1.py"->"exercise_all.py"
+    "project1.py"->"plot_results.py"
+
+    "exercise_all.py"->"exercise_example.py"
+    "exercise_all.py"->"exercise_p1.py"
+    "exercise_all.py"->"exercise_p2.py"
+    "exercise_all.py"->"exercise_p3.py"
+    "exercise_all.py"->"exercise_p4.py"
+    "exercise_all.py"->"exercise_p5.py"
+
+    "exercise_p1.py"->"network.py"
+    "exercise_p1.py"->"simulation_parameters.py"
+    "exercise_p1.py"->"salamandra_sim/data.py"
+
+    "network.py"->"robot_parameters.py"
+
+    "exercise_example.py"->"salamandra_sim/simulation.py" [color="blue"]
+    "exercise_p1.py"->"salamandra_sim/simulation.py" [color="blue"]
+    "exercise_p2.py"->"salamandra_sim/simulation.py" [color="blue"]
+    "exercise_p3.py"->"salamandra_sim/simulation.py" [color="blue"]
+    "exercise_p4.py"->"salamandra_sim/simulation.py" [color="blue"]
+    "exercise_p5.py"->"salamandra_sim/simulation.py" [color="blue"]
+
+
+    "exercise_example.py"->"simulation_parameters.py" [color="red"]
+    "exercise_p1.py"->"simulation_parameters.py" [color="red"]
+    "exercise_p2.py"->"simulation_parameters.py" [color="red"]
+    "exercise_p3.py"->"simulation_parameters.py" [color="red"]
+    "exercise_p4.py"->"simulation_parameters.py" [color="red"]
+    "exercise_p5.py"->"simulation_parameters.py" [color="red"]
+
+    "salamandra_sim/simulation.py"->"salamandra_sim/options.py"
+    "salamandra_sim/simulation.py"->"salamandra_sim/data.py"
+    "salamandra_sim/simulation.py"->"salamandra_sim/controller.py"
+    "salamandra_sim/simulation.py"->"salamandra_sim/callbacks.py"
+    "salamandra_sim/simulation.py"->"salamandra_sim/camera.py"
+
+    "salamandra_sim/controller.py"->"network.py"
+
+    color=black;
+}
