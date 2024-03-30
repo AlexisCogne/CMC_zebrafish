@@ -15,6 +15,5 @@ def exercise0():
 
 
 if __name__ == '__main__':
-    #test_branch
     exercise0()
 
