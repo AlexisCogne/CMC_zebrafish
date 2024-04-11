@@ -26,6 +26,11 @@ class SimulationParameters:
         self.timestep = 0.001  # integration time step
         self.n_iterations = 10001  # number of integration time steps
 
+        # controller parameters
+        self.A = 0.75
+        self.freq = 1
+        self.epsilon = 1.25
+
         # gui/recording parameters
         self.headless = True  # For headless mode (No GUI, could be faster)
         self.fast = False  # For fast mode (not real-time)
