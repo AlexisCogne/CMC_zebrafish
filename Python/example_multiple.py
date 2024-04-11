@@ -25,7 +25,7 @@ def exercise_multiple():
             amp=amp,
             wavefrequency=wavefrequency,
             headless=True,
-            print_metrics=False
+            print_metrics=True
         )
         for i, amp in enumerate(np.linspace(0.05, 0.3, nsim))
         for j, wavefrequency in enumerate(np.linspace(0., 0.1, nsim))
