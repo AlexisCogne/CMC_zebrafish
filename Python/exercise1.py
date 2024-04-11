@@ -40,8 +40,24 @@ def exercise1():
         right_idx,
         cm="green",
         offset=0.1)
+    
+    plt.figure("trajectory")
+    plot_trajectory(controller)
 
 
 if __name__ == '__main__':
     exercise1()
     plt.show()
+
+#Below: manual param search which is not clean ==> use run_multiple
+"""
+def param_search(A = [A_in, A_end], freq = [freq_in, freq_end], epsilon = [epsilon_in, epsilon_end], increments = 10):
+    A_search = np.linspace(A[0], A[1], increments)
+    freq_search = np.linspace(freq[0], freq[1], increments)
+    epsilon_search = np.linspace(epsilon[0], epsilon[1], increments)
+
+    for A in A_search:
+        for freq in freq_search:
+            for epsilon in epsilon_search:
+
+"""
