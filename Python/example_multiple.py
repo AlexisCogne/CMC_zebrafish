@@ -21,19 +21,28 @@ def exercise_multiple():
             n_iterations=3001,
             log_path=log_path,
             video_record=False,
-            compute_metrics=2,
+            compute_metrics=3,
             amp=amp,
             wavefrequency=wavefrequency,
             headless=True,
-            print_metrics=True
+            print_metrics=True,
+            return_network = True
         )
-        for i, amp in enumerate(np.linspace(0.05, 0.3, nsim))
+        for i, amp in enumerate(np.linspace(0.05, 2, nsim))
         for j, wavefrequency in enumerate(np.linspace(0., 0.1, nsim))
     ]
 
-    run_multiple(pars_list, num_process=16)
+    controller = run_multiple(pars_list, num_process=16)
+    for k in range(len(controller)):
+        print(controller[k].metrics)
+        print('---------------------------------')
 
-
+    # make array n by 3 corresponding to x,y,z. For controller.metrics['fspeed_pca'], controller.metrics['wavefrequency'], controller.metrics['amp']
+    fspeed_array = np.array([[controller[i].metrics['fspeed_PCA'], controller[i].metrics['wavefrequency'], controller[i].metrics['amp']] for i in range(len(controller))])
+    fspeed_labels = ['fspeed_PCA', 'wavefrequency', 'amp']
+    print(fspeed_array.shape)
+    print(fspeed_labels[0],'      ', fspeed_labels[1],'      ', fspeed_labels[2])
+    print(fspeed_array)
 if __name__ == '__main__':
     exercise_multiple()
 

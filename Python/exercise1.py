@@ -22,12 +22,14 @@ def exercise1():
             log_path=log_path,
             compute_metrics=3,
             return_network=True,
-            headless = False
+            headless = False,
+            print_metrics=True
         )
     pylog.info("Running the simulation")
     controller = run_single(
             all_pars
         )
+    print(controller.metrics)
     
     left_idx = controller.muscle_l
     right_idx = controller.muscle_r
