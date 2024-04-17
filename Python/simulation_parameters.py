@@ -27,9 +27,9 @@ class SimulationParameters:
         self.n_iterations = 10001  # number of integration time steps
 
         # controller parameters
-        self.A = 0.75
-        self.freq = 1
-        self.epsilon = 1.25
+        self.A = 1 #pay attention this is half the "amp" that yields the computed metrics
+        self.freq = 3
+        self.epsilon = 1
 
         # gui/recording parameters
         self.headless = True  # For headless mode (No GUI, could be faster)
