@@ -24,9 +24,6 @@ class WaveController:
         # state array for recording all the variables
         self.state = np.zeros((pars.n_iterations, 2*self.n_joints))
 
-        pylog.warning(
-            "Implement below the step function following the instructions here and in the report")
-
         # indexes of the left muscle activations (optional)
         self.muscle_l = 2*np.arange(15)
         # indexes of the right muscle activations (optional)
