@@ -15,9 +15,9 @@ def pretty(d, indent=1):
     for key, value in d.items():
         print('\t' * indent + str(key))
         if isinstance(value, dict):
-            pretty(round(value,5), indent+1)
+            pretty("{:.2e}".format(value), indent+1)
         else:
-            print('\t' * (indent+1) + str(round(value,5)))
+            print('\t' * (indent+1) + str("{:.2e}".format(value)))
 
 
 def run_single(pars):
