@@ -21,6 +21,9 @@ def exercise1():
             controller="sine",
             log_path=log_path,
             compute_metrics=3,
+            A = 0.73,
+            freq = 3,
+            epsilon = 1.06,
             return_network=True,
             headless = False,
             print_metrics=True
