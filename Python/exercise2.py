@@ -3,6 +3,7 @@ from util.run_closed_loop import run_multiple, run_multiple2d
 from simulation_parameters import SimulationParameters
 import os
 import numpy as np
+import matplotlib.pyplot as plt
 import farms_pylog as pylog
 from plotting_common import *
 
@@ -14,7 +15,7 @@ def exercise2():
     log_path = './logs/exercise2/'
     os.makedirs(log_path, exist_ok=True)
 
-    nsim = 4
+    nsim = 8
     amp_min = 0.1
     amp_max = 2
     wavefreq_min = 0.1
@@ -25,7 +26,7 @@ def exercise2():
     pars_list1 = [
         SimulationParameters(
             simulation_i=i*nsim+j,
-            n_iterations=15001,
+            n_iterations=5001, #making it short but should increase to at least 30'000
             log_path=log_path,
             video_record=False,
             compute_metrics=3,
@@ -71,6 +72,20 @@ def exercise2():
     print(f'best speed parameters: Amp={np.round(0.5 * controller[best_speed_idx].metrics["amp"],5)}, Wawefrequency = {np.round(controller[best_speed_idx].metrics["wavefrequency"],5)}')
     print("lowest torque achieved: ", "{:.2e}".format(lowest_torque))
     print(f'lowest torque parameters: Amp={np.round(0.5 * controller[lowest_torque_idx].metrics["amp"],5)}, Wawefrequency = {np.round(controller[lowest_torque_idx].metrics["wavefrequency"],5)}')
+    
+    # 2D heatmaps to show the resultsd
+    data = np.concatenate([[[controller[i].metrics['amp'], controller[i].metrics['wavefrequency']] for i in range(j*nsim, (j+1)*nsim)] for j in range(nsim)])
+    extent = [amp_min, amp_max, wavefreq_min, wavefreq_max]
+    results = [[controller[i].metrics['fspeed_cycle'] for i in range(j*nsim, (j+1)*nsim)] for j in range(nsim)]
+    plt.imshow(results, interpolation='nearest',data=data, extent=extent, aspect='auto') 
+    # Add colorbar 
+    plt.colorbar() 
+    plt.xlabel('Amplitude')
+    plt.ylabel('wavefrequency')
+    plt.title("Heatmap with color bar") 
+    plt.show() 
+    
+    
     #Below, code from Max on April 16th, left it here in case
     """
     fspeed_array = np.array([[controller[i].metrics['fspeed_PCA'], controller[i].metrics['wavefrequency'], controller[i].metrics['amp']] for i in range(len(controller))])
