@@ -30,6 +30,8 @@ class SimulationParameters:
         self.A = 1 #pay attention this is half the "amp" that yields the computed metrics
         self.freq = 3
         self.epsilon = 1
+        self.gain= "sinusoidal" # "squared", "sinusoidal", "trapezoid"
+        self.steep = 1
 
         # gui/recording parameters
         self.headless = True  # For headless mode (No GUI, could be faster)
