@@ -17,8 +17,8 @@ def exercise3():
 
    
     S_min = 1
-    S_max = 100
-    nsim = 5  
+    S_max = 1000
+    nsim = 10
     #steepness_values = np.linspace(S_min, S_max, nsim)
 
     # index we want to plot (e.g., joint 3)
@@ -67,6 +67,24 @@ def exercise3():
     print('fspeed_values: ',fspeed_values)
     print('wavefrequency_values: ',wavefrequency_values)
     print('amp_values: ',amp_values)
+    # Plot the results
+    steep = [steepness for k, steepness in enumerate(np.linspace(S_min, S_max, nsim))]
+    df = pd.DataFrame({'Steepness': steep, 'Wavefrequency': wavefrequency_values, 'Amplitude': amp_values, 'Speed': fspeed_values})
+    print(df)
+    sns.set_theme(style="whitegrid")
+    fig, axes = plt.subplots(3, 1, figsize=(10, 10))
+    sns.lineplot(data=df, x='Steepness', y='Speed', ax=axes[0])
+    axes[0].set_title('Speed vs Steepness')
+    axes[0].set_ylabel('Speed')
+    sns.lineplot(data=df, x='Steepness', y='Wavefrequency', ax=axes[1])
+    axes[1].set_title('Wavefrequency vs Steepness')
+    axes[1].set_ylabel('Wavefrequency')
+    sns.lineplot(data=df, x='Steepness', y='Amplitude', ax=axes[2])
+    axes[2].set_title('Amplitude vs Steepness')
+    axes[2].set_ylabel('Amplitude')
+    plt.tight_layout()
+    plt.show()
+
 
     # left_muscle_activation = controller.state[:, controller.muscle_l[joint_index]]
     # right_muscle_activation = controller.state[:, controller.muscle_r[joint_index]]

@@ -158,22 +158,39 @@ def exercise2():
     plt.title('Heatmap of Forward Speed')
     plt.show()
 
-    #plot line plot of wavefrequency vs fspeed
-    plt.figure('line plot')
-    #for only one simulation
-    plt.scatter(wavefrequency_values, fspeed_values,color='red')
-    plt.xlabel('Wavefrequency')
-    plt.ylabel('Forward Speed')
-    plt.title('Wavefrequency vs Forward Speed')
+
+    #Plot speed vs single parameter
+    df = pd.DataFrame({'Wavefrequency': wavefrequency_values, 'Amplitude': amp_values, 'Speed': fspeed_values})
+    print(df)
+    sns.set_theme(style="whitegrid")
+    fig, axes = plt.subplots(2, 1, figsize=(10, 10))
+    sns.lineplot(data=df, x='Wavefrequency', y='Speed', ax=axes[0])
+    axes[0].set_title('Speed vs Steepness')
+    axes[0].set_ylabel('Speed')
+    sns.lineplot(data=df, x='Amplitude', y='Speed', ax=axes[1])
+    axes[1].set_title('Amplitude vs Speed')
+    axes[1].set_ylabel('Speed')
+
+    
+    plt.tight_layout()
     plt.show()
 
-    #plot line plot of amplitude vs fspeed
-    plt.figure('line plot')
-    plt.plot(amp_values, fspeed_values,color='blue')
-    plt.xlabel('Amplitude')
-    plt.ylabel('Forward Speed')
-    plt.title('Amplitude vs Forward Speed')
-    plt.show()
+    # #plot line plot of wavefrequency vs fspeed
+    # plt.figure('line plot')
+    # #for only one simulation
+    # plt.scatter(wavefrequency_values, fspeed_values,color='red')
+    # plt.xlabel('Wavefrequency')
+    # plt.ylabel('Forward Speed')
+    # plt.title('Wavefrequency vs Forward Speed')
+    # plt.show()
+
+    # #plot line plot of amplitude vs fspeed
+    # plt.figure('line plot')
+    # plt.plot(amp_values, fspeed_values,color='blue')
+    # plt.xlabel('Amplitude')
+    # plt.ylabel('Forward Speed')
+    # plt.title('Amplitude vs Forward Speed')
+    # plt.show()
 
     
     #print(all_metrics['frequency'].values())
