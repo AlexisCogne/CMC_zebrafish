@@ -19,14 +19,15 @@ def exercise2():
     log_path = './logs/exercise2/'
     os.makedirs(log_path, exist_ok=True)
 
-    nsim = 5
+    nsim = 100
     amp_min = 0.1
     amp_max = 2
-    wavefreq_min = 0.1
+    wavefreq_min = 0
     wavefreq_max = 3
 
     pylog.info(
         "Running multiple simulations in parallel from a list of SimulationParameters")
+    
     pars_list1 = [
         SimulationParameters(
             simulation_i=i*nsim+j,
@@ -43,13 +44,51 @@ def exercise2():
         for i, amp in enumerate(np.linspace(amp_min, amp_max, nsim))
         for j, wavefrequency in enumerate(np.linspace(wavefreq_min, wavefreq_max, nsim))
     ]
-    controller = run_multiple(pars_list1, num_process=10)
+    
+
+    pars_list_amp = [
+        SimulationParameters(
+            simulation_i=i*nsim,
+            n_iterations=10001, #making it short but should increase to at least 30'000
+            log_path=log_path,
+            video_record=False,
+            compute_metrics=3,
+            A=amp,
+            #epsilon=wavefrequency,
+            headless=True,
+            print_metrics=False,
+            return_network = True
+        )
+        for i, amp in enumerate(np.linspace(amp_min, amp_max, nsim))]
+
+    
+    pars_list_wf = [
+        SimulationParameters(
+            simulation_i=j*nsim,
+            n_iterations=10001, #making it short but should increase to at least 30'000
+            log_path=log_path,
+            video_record=False,
+            compute_metrics=3,
+            #A=amp,
+            epsilon=wavefrequency,
+            headless=True,
+            print_metrics=False,
+            return_network = True
+        )
+        for j, wavefrequency in enumerate(np.linspace(wavefreq_min, wavefreq_max, nsim))]
+    
+    pars_list = pars_list_amp
+    controller = run_multiple(pars_list, num_process=10)
 
     #Printing the results
     best_speed = -np.inf
     lowest_torque = np.inf
-    
-    for k in range(nsim**2):
+    if pars_list == pars_list1:
+        sim_range =nsim**2
+    else:
+        sim_range = nsim
+
+    for k in range(sim_range):
         if controller[k].metrics["fspeed_cycle"] > best_speed:
             best_speed = controller[k].metrics["fspeed_cycle"]
             best_speed_idx = k
@@ -127,70 +166,51 @@ def exercise2():
     fspeed_values = np.array([controller[i].metrics['fspeed_cycle'] for i in range(len(controller))])
     #print('fspeed_values: ',fspeed_values)
 
+    if pars_list == pars_list1:
+        #make pairs of the values
+        pairs_array = np.array([[amp_values[i], wavefrequency_values[i]] for i in range(len(amp_values))])
+        #print('pairs: ',pairs_array)
+        fspeed_matrix = np.reshape(fspeed_values, (nsim, nsim)).T
+        #print('fspeed_matrix: ',fspeed_matrix)
+        
+        #
+        amp_pd_arr = [amp for i, amp in enumerate(np.linspace(amp_min, amp_max, nsim))]
+        wf_pd_arr = [wavefrequency for j, wavefrequency in enumerate(np.linspace(wavefreq_min, wavefreq_max, nsim))]
+        #make data frame where wavefrequency is the index and amp is the columns
+        #print('wave_round: ', np.unique(np.round(wavefrequency_values, decimals=2)))
+        results_2 = pd.DataFrame(fspeed_matrix, index=np.round(wf_pd_arr, decimals=2), columns= np.round(amp_pd_arr, decimals=2))
 
-    #make pairs of the values
-    pairs_array = np.array([[amp_values[i], wavefrequency_values[i]] for i in range(len(amp_values))])
-    #print('pairs: ',pairs_array)
-    fspeed_matrix = np.reshape(fspeed_values, (nsim, nsim)).T
-    #print('fspeed_matrix: ',fspeed_matrix)
+        #print('results_2: ',results_2)
 
-    
-    #
-    amp_pd_arr = [amp for i, amp in enumerate(np.linspace(amp_min, amp_max, nsim))]
-    wf_pd_arr = [wavefrequency for j, wavefrequency in enumerate(np.linspace(wavefreq_min, wavefreq_max, nsim))]
-    #make data frame where wavefrequency is the index and amp is the columns
-    #print('wave_round: ', np.unique(np.round(wavefrequency_values, decimals=2)))
-    results_2 = pd.DataFrame(fspeed_matrix, index=np.round(wf_pd_arr, decimals=2), columns= np.round(amp_pd_arr, decimals=2))
-
-    #print('results_2: ',results_2)
-
-    #plot heatmap using seaborn
-    sn_ax = sns.heatmap(results_2,annot=False,cmap='nipy_spectral')
-    #sns.color_palette("Spectral", as_cmap=True)
-    sn_ax.invert_yaxis()
-    #make xticks vertical
-    plt.xticks(rotation=90)
-    plt.yticks(rotation=0)
-    #change the font size
-    plt.tick_params(axis='both', which='major', labelsize=8)
-    plt.xlabel('Amplitude')
-    plt.ylabel('Wavefrequency')
-    plt.title('Heatmap of Forward Speed')
-    plt.show()
-
-
-    #Plot speed vs single parameter
-    df = pd.DataFrame({'Wavefrequency': wavefrequency_values, 'Amplitude': amp_values, 'Speed': fspeed_values})
-    print(df)
-    sns.set_theme(style="whitegrid")
-    fig, axes = plt.subplots(2, 1, figsize=(10, 10))
-    sns.lineplot(data=df, x='Wavefrequency', y='Speed', ax=axes[0])
-    axes[0].set_title('Speed vs Steepness')
-    axes[0].set_ylabel('Speed')
-    sns.lineplot(data=df, x='Amplitude', y='Speed', ax=axes[1])
-    axes[1].set_title('Amplitude vs Speed')
-    axes[1].set_ylabel('Speed')
+        #plot heatmap using seaborn
+        sn_ax = sns.heatmap(results_2,annot=False,cmap='nipy_spectral')
+        #sns.color_palette("Spectral", as_cmap=True)
+        sn_ax.invert_yaxis()
+        #make xticks vertical
+        plt.xticks(rotation=90)
+        plt.yticks(rotation=0)
+        #change the font size
+        plt.tick_params(axis='both', which='major', labelsize=8)
+        plt.xlabel('Amplitude')
+        plt.ylabel('Wavefrequency')
+        plt.title('Heatmap of Forward Speed')
+        plt.show()
+    else:
+        #Plot speed vs single parameter
+        df = pd.DataFrame({'Wavefrequency': wavefrequency_values, 'Amplitude': amp_values, 'Speed': fspeed_values})
+        print(df)
+        sns.set_theme(style="whitegrid")
+        fig, axes = plt.subplots(2, 1, figsize=(10, 10))
+        sns.lineplot(data=df, x='Wavefrequency', y='Speed', ax=axes[0])
+        axes[0].set_title('Speed vs Wavefrequency')
+        axes[0].set_ylabel('Speed')
+        sns.lineplot(data=df, x='Amplitude', y='Speed', ax=axes[1])
+        axes[1].set_title('Amplitude vs Speed')
+        axes[1].set_ylabel('Speed')
 
     
     plt.tight_layout()
     plt.show()
-
-    # #plot line plot of wavefrequency vs fspeed
-    # plt.figure('line plot')
-    # #for only one simulation
-    # plt.scatter(wavefrequency_values, fspeed_values,color='red')
-    # plt.xlabel('Wavefrequency')
-    # plt.ylabel('Forward Speed')
-    # plt.title('Wavefrequency vs Forward Speed')
-    # plt.show()
-
-    # #plot line plot of amplitude vs fspeed
-    # plt.figure('line plot')
-    # plt.plot(amp_values, fspeed_values,color='blue')
-    # plt.xlabel('Amplitude')
-    # plt.ylabel('Forward Speed')
-    # plt.title('Amplitude vs Forward Speed')
-    # plt.show()
 
     
     #print(all_metrics['frequency'].values())

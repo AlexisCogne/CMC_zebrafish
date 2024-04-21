@@ -71,7 +71,7 @@ class WaveController:
 
 
         
-    def S_square(self, iteration, time, timestep, pos=None, epsilon=1.25, A=0.75, freq=2):
+    def S_square(self, iteration, time, timestep, pos=None):
         """Square wave gain function.
         this function is optional. """
 
@@ -84,11 +84,11 @@ class WaveController:
         return self.state[iteration, :]
 
 
-    def S_trapezoidal(self, iteration, time, timestep, pos=None, epsilon=1.25, A=3, freq=2, steep=7):
+    def S_trapezoidal(self, iteration, time, timestep, pos=None):
         """Trapezoidal wave gain function. 
         This function allows to obtain a more natural-like swimming behavior for the zebrafish model.
         The parameter steepness allows to switch from a sinusoidal wave to a trapezoidal wave. """
-        
+        '''
         for i in range(self.n_joints):
             l_index = self.muscle_l[i]
             r_index = self.muscle_r[i]
@@ -102,7 +102,22 @@ class WaveController:
             # Assign activations based on the muscle
             self.state[iteration, l_index] =  sigmoid_activation_l
             self.state[iteration, r_index] =  sigmoid_activation_r
+        '''
+        for i in range(self.n_joints):
+            l_index = self.muscle_l[i]
+            r_index = self.muscle_r[i]
+            # Compute the sin input with adjusted steepness
+            sigmoid_input_l = self.steep * (0.5 + self.A/2*np.sin(2*np.pi*(self.freq*time-self.epsilon*i/self.n_joints)))
+            sigmoid_input_r = self.steep * (0.5 - self.A/2*np.sin(2*np.pi*(self.freq*time-self.epsilon*i/self.n_joints)))
+            # Compute the sigmoid activation function starting from the sin input with adapted steepness
+            sigmoid_activation_l = 1 / (1 + np.exp(-sigmoid_input_l))
+            sigmoid_activation_r = 1 / (1 + np.exp(-sigmoid_input_r))
+
+            # Assign activations based on the muscle
+            self.state[iteration, l_index] =  sigmoid_activation_l
+            self.state[iteration, r_index] =  sigmoid_activation_r
                 
+
 
         return self.state[iteration, :]
 
