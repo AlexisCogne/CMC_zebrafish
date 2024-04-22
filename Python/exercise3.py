@@ -10,6 +10,14 @@ import pandas as pd
 import seaborn as sns
 
 
+def calculate_energy(joints_data, joint_angles, times):
+    dt = times[1] - times[0]
+    angular_velocities = np.diff(joint_angles, axis=0) / dt
+    power = [joints_data[:-1,:, i] * angular_velocities for i in range(joints_data.shape[2])]
+    energy = np.sum(np.abs(power)) * dt
+
+    return energy
+
 
 def exercise3():
 
@@ -93,6 +101,27 @@ def exercise3():
     
     #save the figure with high resolution to plot path
     fig.savefig(plot_path+'Speed_vs_Steepness.png', dpi=500)
+
+    #print("Controller.joints_data: ", controller.joints)
+    #print("Controller Keys: ", controller.__dict__.keys())
+    #print("Controller Metrics: ", controller.joints_active_torques)
+    print("Controller metrics: ", controller[0].metrics.keys())
+    energy = [calculate_energy(control.joints, control.joints_positions, control.times) for control in controller]
+    #print("Energy: ", energy)
+    print("Energy lenght: ", len(energy))
+    print("Steepness lenght: ", len(steep))
+
+    # Plot the energy vs steepness
+    fig, axes = plt.subplots(1, 1, figsize=(10, 10))
+    sns.lineplot(x=steep, y=energy, ax=axes)
+    #axes.set_title('Energy vs Steepness')
+    axes.set_xlabel('Steepness')
+    axes.set_ylabel('Energy')
+    plt.tight_layout()
+    plt.show()
+    #save the figure with high resolution to plot path
+    fig.savefig(plot_path+'Energy_vs_Steepness.png', dpi=500)
+
 
     
     #print(controller.metrics)
@@ -183,4 +212,4 @@ def exercise3_single():
 
 
 if __name__ == '__main__':
-    exercise3_single()
+    exercise3()

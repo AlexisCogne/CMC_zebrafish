@@ -11,6 +11,13 @@ import pandas as pd
 import seaborn as sns
 
 
+def calculate_energy(joints_data, joint_angles, times):
+    dt = times[1] - times[0]
+    angular_velocities = np.diff(joint_angles, axis=0) / dt
+    power = joints_data[:-1, :] * angular_velocities
+    energy = np.sum(np.abs(power)) * dt
+
+    return energy
 
 def exercise2():
 
@@ -211,6 +218,8 @@ def exercise2():
     
     plt.tight_layout()
     plt.show()
+
+    
 
     
     #print(all_metrics['frequency'].values())
