@@ -24,13 +24,14 @@ def exercise2():
     pylog.info("Ex 2")
     pylog.info("Implement exercise 2")
     log_path = './logs/exercise2/'
+    plot_path = '/Users/maxgrobbelaar/Documents/EPFL_Spring_2024/Computational Motor control/project1_figures/'
     os.makedirs(log_path, exist_ok=True)
 
     nsim = 100
     amp_min = 0.1
     amp_max = 2
     wavefreq_min = 0
-    wavefreq_max = 3
+    wavefreq_max = 2
 
     pylog.info(
         "Running multiple simulations in parallel from a list of SimulationParameters")
@@ -39,7 +40,7 @@ def exercise2():
         SimulationParameters(
             simulation_i=i*nsim+j,
             n_iterations=10001, #making it short but should increase to at least 30'000
-            log_path=log_path,
+            log_path="",
             video_record=False,
             compute_metrics=3,
             A=amp,
@@ -73,7 +74,7 @@ def exercise2():
         SimulationParameters(
             simulation_i=j*nsim,
             n_iterations=10001, #making it short but should increase to at least 30'000
-            log_path=log_path,
+            log_path= "", #log_path,
             video_record=False,
             compute_metrics=3,
             #A=amp,
@@ -84,8 +85,8 @@ def exercise2():
         )
         for j, wavefrequency in enumerate(np.linspace(wavefreq_min, wavefreq_max, nsim))]
     
-    pars_list = pars_list_amp
-    controller = run_multiple(pars_list, num_process=10)
+    pars_list = pars_list1
+    controller = run_multiple(pars_list, num_process=16)
 
     #Printing the results
     best_speed = -np.inf
@@ -207,13 +208,18 @@ def exercise2():
         df = pd.DataFrame({'Wavefrequency': wavefrequency_values, 'Amplitude': amp_values, 'Speed': fspeed_values})
         print(df)
         sns.set_theme(style="whitegrid")
-        fig, axes = plt.subplots(2, 1, figsize=(10, 10))
-        sns.lineplot(data=df, x='Wavefrequency', y='Speed', ax=axes[0])
-        axes[0].set_title('Speed vs Wavefrequency')
-        axes[0].set_ylabel('Speed')
-        sns.lineplot(data=df, x='Amplitude', y='Speed', ax=axes[1])
-        axes[1].set_title('Amplitude vs Speed')
-        axes[1].set_ylabel('Speed')
+        fig1, axes1 = plt.subplots(1, 1, figsize=(10, 10))
+        sns.lineplot(data=df, x='Wavefrequency', y='Speed', ax=axes1)
+        #axes1.set_title('Speed vs Wavefrequency')
+        axes1.set_ylabel('Speed')
+        fig1.savefig(plot_path+'Wavefrequency_vs_Speed.png', dpi=500)
+
+        sns.set_theme(style="whitegrid")
+        fig2, axes2 = plt.subplots(1, 1, figsize=(10, 10))
+        sns.lineplot(data=df, x='Amplitude', y='Speed', ax=axes2)
+        #axes2.set_title('Amplitude vs Speed')
+        axes2.set_ylabel('Speed')
+        fig2.savefig(plot_path+'Amplitude_vs_Speed.png', dpi=500)
 
     
     plt.tight_layout()
