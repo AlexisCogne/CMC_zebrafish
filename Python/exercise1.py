@@ -52,7 +52,7 @@ def exercise1():
         cm="jet",
         offset=0.1,
         save = True,
-        path = file_path)
+        file_path = file_path)
     
     # 1.2 Plotting the head trajectory 
     name_figure = "1_fastest_head_trajectory.png"
