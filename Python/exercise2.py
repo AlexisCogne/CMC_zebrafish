@@ -24,8 +24,9 @@ def exercise2():
     pylog.info("Ex 2")
     pylog.info("Implement exercise 2")
     log_path = './logs/exercise2/'
-    plot_path = '/Users/maxgrobbelaar/Documents/EPFL_Spring_2024/Computational Motor control/project1_figures/'
+    plot_path = '/Users/maxgrobbelaar/Documents/EPFL_Spring_2024/Computational Motor control/project1_figures/exercise2/sinusoidal/25_04/2/'
     os.makedirs(log_path, exist_ok=True)
+    os.makedirs(plot_path, exist_ok=True)
 
     nsim = 100
     amp_min = 0.1
@@ -47,7 +48,9 @@ def exercise2():
             epsilon=wavefrequency,
             headless=True,
             print_metrics=False,
-            return_network = True
+            return_network = True,
+            steep = 7,
+            gain="trapezoid"
         )
         for i, amp in enumerate(np.linspace(amp_min, amp_max, nsim))
         for j, wavefrequency in enumerate(np.linspace(wavefreq_min, wavefreq_max, nsim))
@@ -85,12 +88,15 @@ def exercise2():
         )
         for j, wavefrequency in enumerate(np.linspace(wavefreq_min, wavefreq_max, nsim))]
     
-    pars_list = pars_list1
-    controller = run_multiple(pars_list, num_process=16)
+    pars_list = pars_list_wf
+    controller = run_multiple(pars_list, num_process=10)
+    #controller = run_multiple2d(pars_list_amp,pars_list_wf, num_process=10)
 
     #Printing the results
     best_speed = -np.inf
     lowest_torque = np.inf
+    lowest_lateral_speed = np.inf
+    ptcc_max = -np.inf
     if pars_list == pars_list1:
         sim_range =nsim**2
     else:
@@ -103,6 +109,12 @@ def exercise2():
         if controller[k].metrics["torque"] < lowest_torque:
             lowest_torque = controller[k].metrics["torque"]
             lowest_torque_idx = k
+        if controller[k].metrics["lspeed_cycle"] < lowest_lateral_speed:
+            lowest_lateral_speed = controller[k].metrics["lspeed_cycle"]
+            lowest_lateral_speed_idx = k
+        if controller[k].metrics["ptcc"] > ptcc_max:
+            ptcc_max = controller[k].metrics["ptcc"]
+            ptcc_max_idx = k
         
         #Printing purposes
         print('---------------------------------')
@@ -113,6 +125,8 @@ def exercise2():
         print("---- Computed metrics ----")
         print("Forward speed: ", "{:.2e}".format(controller[k].metrics["fspeed_cycle"]))
         print("Torque consumption: ", "{:.2e}".format(controller[k].metrics["torque"]))
+        print("Lateral speed: ", "{:.2e}".format(controller[k].metrics["lspeed_cycle"]))
+        print("ptcc: ", "{:.2e}".format(controller[k].metrics["ptcc"]))
     
     #Printing the best speed and lowest torque as well as their indixes
     print(" ")
@@ -122,9 +136,14 @@ def exercise2():
     print(" ")
 
     print("best speed achieved: ", "{:.2e}".format(best_speed))
-    print(f'best speed parameters: Amp={np.round(0.5 * controller[best_speed_idx].metrics["amp"],5)}, Wawefrequency = {np.round(controller[best_speed_idx].metrics["wavefrequency"],5)}')
+    print(f'best speed parameters: Amp={np.round(0.5 * controller[best_speed_idx].metrics["amp"],5)}, Wavefrequency = {np.round(controller[best_speed_idx].metrics["wavefrequency"],5)}')
     print("lowest torque achieved: ", "{:.2e}".format(lowest_torque))
-    print(f'lowest torque parameters: Amp={np.round(0.5 * controller[lowest_torque_idx].metrics["amp"],5)}, Wawefrequency = {np.round(controller[lowest_torque_idx].metrics["wavefrequency"],5)}')
+    print(f'lowest torque parameters: Amp={np.round(0.5 * controller[lowest_torque_idx].metrics["amp"],5)}, Wavefrequency = {np.round(controller[lowest_torque_idx].metrics["wavefrequency"],5)}')
+    print("lowest lateral speed achieved: ", "{:.2e}".format(lowest_lateral_speed))
+    print(f'lowest lateral speed parameters: Amp={np.round(0.5 * controller[lowest_lateral_speed_idx].metrics["amp"],5)}, Wavefrequency = {np.round(controller[lowest_lateral_speed_idx].metrics["wavefrequency"],5)}')
+    print("ptcc max achieved: ", "{:.2e}".format(ptcc_max))
+    print(f'ptcc max parameters: Amp={np.round(0.5 * controller[ptcc_max_idx].metrics["amp"],5)}, Wavefrequency = {np.round(controller[ptcc_max_idx].metrics["wavefrequency"],5)}')
+    
     '''
     # 2D heatmaps to show the resultsd
     data = np.concatenate([[[controller[i].metrics['amp'], controller[i].metrics['wavefrequency']] for i in range(j*nsim, (j+1)*nsim)] for j in range(nsim)])
@@ -172,6 +191,10 @@ def exercise2():
     wavefrequency_values = np.array([controller[i].metrics['wavefrequency'] for i in range(len(controller))])
     amp_values = np.array([controller[i].metrics['amp'] for i in range(len(controller))])
     fspeed_values = np.array([controller[i].metrics['fspeed_cycle'] for i in range(len(controller))])
+    lspeed_values = np.array([controller[i].metrics['lspeed_cycle'] for i in range(len(controller))])
+    torque_values = np.array([controller[i].metrics['torque'] for i in range(len(controller))])
+    ptcc_values = np.array([controller[i].metrics['ptcc'] for i in range(len(controller))])
+
     #print('fspeed_values: ',fspeed_values)
 
     if pars_list == pars_list1:
@@ -191,7 +214,10 @@ def exercise2():
         #print('results_2: ',results_2)
 
         #plot heatmap using seaborn
-        sn_ax = sns.heatmap(results_2,annot=False,cmap='nipy_spectral')
+        sn_ax = sns.heatmap(results_2,annot=False,cmap='nipy_spectral',square=True)
+        #make it sqaure
+        #sn_ax.set_aspect('auto')
+
         #sns.color_palette("Spectral", as_cmap=True)
         sn_ax.invert_yaxis()
         #make xticks vertical
@@ -201,29 +227,99 @@ def exercise2():
         plt.tick_params(axis='both', which='major', labelsize=8)
         plt.xlabel('Amplitude')
         plt.ylabel('Wavefrequency')
-        plt.title('Heatmap of Forward Speed')
+        #plt.title('Heatmap of Forward Speed')
+        #save the heatmap
+        plt.savefig(plot_path+'Heatmap_Speed.png', dpi=500)
         plt.show()
+        
+        #Heatmap of torque
+        torque_matrix = np.reshape(torque_values, (nsim, nsim)).T
+        results_3 = pd.DataFrame(torque_matrix, index=np.round(wf_pd_arr, decimals=2), columns= np.round(amp_pd_arr, decimals=2))
+        sn_ax = sns.heatmap(results_3,annot=False,cmap='nipy_spectral',square=True)
+        sn_ax.invert_yaxis()
+        plt.xticks(rotation=90)
+        plt.yticks(rotation=0)
+        plt.tick_params(axis='both', which='major', labelsize=15)
+        plt.xlabel('Amplitude')
+        plt.ylabel('Wavefrequency')
+        #plt.title('Heatmap of Torque')
+        #save the heatmap
+        plt.savefig(plot_path+'Heatmap_Torque.png', dpi=500)
+        plt.show()
+
+        #Heatmap of lateral speed
+        lspeed_matrix = np.reshape(lspeed_values, (nsim, nsim)).T
+        results_4 = pd.DataFrame(lspeed_matrix, index=np.round(wf_pd_arr, decimals=2), columns= np.round(amp_pd_arr, decimals=2))
+        sn_ax = sns.heatmap(results_4,annot=False,cmap='nipy_spectral',square=True)
+        sn_ax.invert_yaxis()
+        plt.xticks(rotation=90)
+        plt.yticks(rotation=0)
+        plt.tick_params(axis='both', which='major', labelsize=15)
+        plt.xlabel('Amplitude')
+        plt.ylabel('Wavefrequency')
+        #plt.title('Heatmap of Lateral Speed')
+        #save the heatmap
+        plt.savefig(plot_path+'Heatmap_Lateral_Speed.png', dpi=500)
+        plt.show()
+
+        #Heatmap of ptcc
+        ptcc_matrix = np.reshape(ptcc_values, (nsim, nsim)).T
+        results_5 = pd.DataFrame(ptcc_matrix, index=np.round(wf_pd_arr, decimals=2), columns= np.round(amp_pd_arr, decimals=2))
+        sn_ax = sns.heatmap(results_5,annot=False,cmap='nipy_spectral',square=True)
+        sn_ax.invert_yaxis()
+        plt.xticks(rotation=90)
+        plt.yticks(rotation=0)
+        plt.tick_params(axis='both', which='major', labelsize=15)
+        plt.xlabel('Amplitude')
+        plt.ylabel('Wavefrequency')
+        #plt.title('Heatmap of PTCC')
+        #save the heatmap
+        plt.savefig(plot_path+'Heatmap_PTCC.png', dpi=500)
+        plt.show()
+
+        # #Plot lateral speed vs torque
+        # df = pd.DataFrame({'Torque': torque_values, 'Lateral Speed': lspeed_values})
+        # sns.set_theme(style="whitegrid")
+        # fig, axes = plt.subplots(1, 1, figsize=(10, 10))
+        # sns.lineplot(data=df, x='Torque', y='Lateral Speed', ax=axes)
+        # #axes.set_title('Lateral Speed vs Torque')
+        # axes.set_ylabel('Lateral Speed')
+        # fig.savefig(plot_path+'Torque_vs_Lateral_Speed.png', dpi=500)
+        
+
+        # #line plot of speed vs 2 parameters
+        # sns.set_theme(style="whitegrid")
+        # fig, axes = plt.subplots(1, 1, figsize=(10, 10))
+        # sns.lineplot(data=results_2, ax=axes)
+        # #axes.set_title('Speed vs Wavefrequency and Amplitude')
+        # axes.set_ylabel('Speed')
+        # fig.savefig(plot_path+'Speed_vs_Wavefrequency_Amplitude.png', dpi=500)
+
+
     else:
         #Plot speed vs single parameter
-        df = pd.DataFrame({'Wavefrequency': wavefrequency_values, 'Amplitude': amp_values, 'Speed': fspeed_values})
+        df = pd.DataFrame({'Wavefrequency': wavefrequency_values, 'Amplitude': amp_values/2, 'Speed': fspeed_values})
         print(df)
-        sns.set_theme(style="whitegrid")
-        fig1, axes1 = plt.subplots(1, 1, figsize=(10, 10))
-        sns.lineplot(data=df, x='Wavefrequency', y='Speed', ax=axes1)
-        #axes1.set_title('Speed vs Wavefrequency')
-        axes1.set_ylabel('Speed')
-        fig1.savefig(plot_path+'Wavefrequency_vs_Speed.png', dpi=500)
+        
+        # fig1, axes1 = plt.subplots(1, 1, figsize=(10, 10))
+        # sns.set_theme(style="whitegrid")
+        # sns.lineplot(data=df, x='Wavefrequency', y='Speed', ax=axes1)
+        # #axes1.set_title('Speed vs Wavefrequency')
+        # axes1.set_ylabel('Speed')
+        # fig1.savefig(plot_path+'Wavefrequency_vs_Speed.png', dpi=500)
 
-        sns.set_theme(style="whitegrid")
+        
         fig2, axes2 = plt.subplots(1, 1, figsize=(10, 10))
-        sns.lineplot(data=df, x='Amplitude', y='Speed', ax=axes2)
+        
+        sns.lineplot(data=df, x='Wavefrequency', y='Speed', ax=axes2)
+        sns.set_theme(style="whitegrid")
         #axes2.set_title('Amplitude vs Speed')
         axes2.set_ylabel('Speed')
-        fig2.savefig(plot_path+'Amplitude_vs_Speed.png', dpi=500)
+        fig2.savefig(plot_path+'Wavefrequency_vs_Speed.png', dpi=500)
 
     
-    plt.tight_layout()
-    plt.show()
+    # plt.tight_layout()
+    # plt.show()
 
     
 

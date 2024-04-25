@@ -93,8 +93,8 @@ class WaveController:
             l_index = self.muscle_l[i]
             r_index = self.muscle_r[i]
             # Compute the sin input with adjusted steepness
-            sigmoid_input_l = self.steep * (0.5 + A/2*np.sin(2*np.pi*(freq*time-epsilon*i/self.n_joints)))
-            sigmoid_input_r = self.steep * (0.5 - A/2*np.sin(2*np.pi*(freq*time-epsilon*i/self.n_joints)))
+            sigmoid_input_l = self.steep * (0.5 + self.A/2*np.sin(2*np.pi*(self.freq*time-self.epsilon*i/self.n_joints)))
+            sigmoid_input_r = self.steep * (0.5 - self.A/2*np.sin(2*np.pi*(self.freq*time-self.epsilon*i/self.n_joints)))
             # Compute the sigmoid activation function starting from the sin input with adapted steepness
             sigmoid_activation_l = 1 / (1 + np.exp(-sigmoid_input_l))
             sigmoid_activation_r = 1 / (1 + np.exp(-sigmoid_input_r))
@@ -107,16 +107,14 @@ class WaveController:
             l_index = self.muscle_l[i]
             r_index = self.muscle_r[i]
             # Compute the sin input with adjusted steepness
-            sigmoid_input_l = self.steep * (0.5 + self.A/2*np.sin(2*np.pi*(self.freq*time-self.epsilon*i/self.n_joints)))
-            sigmoid_input_r = self.steep * (0.5 - self.A/2*np.sin(2*np.pi*(self.freq*time-self.epsilon*i/self.n_joints)))
+            sigmoid_input_l =   self.steep*np.sin(2*np.pi*(self.freq*time-self.epsilon*i/self.n_joints))
+            sigmoid_input_r =   self.steep*np.sin(2*np.pi*(self.freq*time-self.epsilon*i/self.n_joints))
             # Compute the sigmoid activation function starting from the sin input with adapted steepness
-            sigmoid_activation_l = 1 / (1 + np.exp(-sigmoid_input_l))
-            sigmoid_activation_r = 1 / (1 + np.exp(-sigmoid_input_r))
-
+            sigmoid_activation_l = 0.5 + self.A/2 * np.tanh(sigmoid_input_l ) #1 / (1 + np.exp(-sigmoid_input_l))
+            sigmoid_activation_r = 0.5 - self.A/2 * np.tanh(sigmoid_input_r ) #1 / (1 + np.exp(-sigmoid_input_r))
             # Assign activations based on the muscle
             self.state[iteration, l_index] =  sigmoid_activation_l
             self.state[iteration, r_index] =  sigmoid_activation_r
-                
 
 
         return self.state[iteration, :]
