@@ -144,49 +144,13 @@ def exercise2():
     print("ptcc max achieved: ", "{:.2e}".format(ptcc_max))
     print(f'ptcc max parameters: Amp={np.round(0.5 * controller[ptcc_max_idx].metrics["amp"],5)}, Wavefrequency = {np.round(controller[ptcc_max_idx].metrics["wavefrequency"],5)}')
     
-    '''
-    # 2D heatmaps to show the resultsd
-    data = np.concatenate([[[controller[i].metrics['amp'], controller[i].metrics['wavefrequency']] for i in range(j*nsim, (j+1)*nsim)] for j in range(nsim)])
-    print("Data: ",data)
-    extent = [amp_min*2, amp_max*2, wavefreq_min, wavefreq_max]
-    results = [[controller[i].metrics['fspeed_cycle'] for i in range(j*nsim, (j+1)*nsim)] for j in range(nsim)]
-    print('Results: ',results)
-    # plt.imshow(results, interpolation='nearest',data=data, extent=extent, aspect='auto') 
-    # # Add colorbar 
-    # plt.colorbar() 
-    # plt.xlabel('Amplitude')
-    # plt.ylabel('wavefrequency')
-    # plt.title("Heatmap with color bar") 
-    # plt.show() 
-    '''
     
-    
-    #Below, code from Max on April 16th, left it here in case
-    
-    # fspeed_array = np.array([[controller[i].metrics['fspeed_PCA'], controller[i].metrics['wavefrequency'], controller[i].metrics['amp']] for i in range(len(controller))])
-    # fspeed_labels = ['fspeed_PCA', 'wavefrequency', 'amp']
-    # print(fspeed_array.shape)
-    # print(fspeed_labels[0],'        ', fspeed_labels[1],'        ', fspeed_labels[2])
-    # print(fspeed_array)
-    # plt.figure("2d plot")
-    # plot_2d(fspeed_array,labels=fspeed_labels,cmap='nipy_spectral')
-    # plt.show()
-    #key,items = dict.items()
-    
-    # all_metrics = dict()
-    # for k in range(len(controller)):
-    #     for metric in controller[k].metrics:
-    #         if metric not in all_metrics:
-    #             all_metrics[metric] = dict()
-    #         all_metrics[metric][k] = controller[k].metrics[metric]
-
     all_metrics = defaultdict(dict)
 
     for k, ctrl in enumerate(controller):
         for metric, value in ctrl.metrics.items():
             all_metrics[metric][k] = value
     #print(all_metrics)
-    # Extracting data from the controller metrics
     # Extracting data from the controller metrics
     wavefrequency_values = np.array([controller[i].metrics['wavefrequency'] for i in range(len(controller))])
     amp_values = np.array([controller[i].metrics['amp'] for i in range(len(controller))])
@@ -202,23 +166,17 @@ def exercise2():
         pairs_array = np.array([[amp_values[i], wavefrequency_values[i]] for i in range(len(amp_values))])
         #print('pairs: ',pairs_array)
         fspeed_matrix = np.reshape(fspeed_values, (nsim, nsim)).T
-        #print('fspeed_matrix: ',fspeed_matrix)
         
-        #
         amp_pd_arr = [amp for i, amp in enumerate(np.linspace(amp_min, amp_max, nsim))]
         wf_pd_arr = [wavefrequency for j, wavefrequency in enumerate(np.linspace(wavefreq_min, wavefreq_max, nsim))]
         #make data frame where wavefrequency is the index and amp is the columns
         #print('wave_round: ', np.unique(np.round(wavefrequency_values, decimals=2)))
         results_2 = pd.DataFrame(fspeed_matrix, index=np.round(wf_pd_arr, decimals=2), columns= np.round(amp_pd_arr, decimals=2))
 
-        #print('results_2: ',results_2)
-
         #plot heatmap using seaborn
         sn_ax = sns.heatmap(results_2,annot=False,cmap='nipy_spectral',square=True)
         #make it sqaure
-        #sn_ax.set_aspect('auto')
-
-        #sns.color_palette("Spectral", as_cmap=True)
+        
         sn_ax.invert_yaxis()
         #make xticks vertical
         plt.xticks(rotation=90)
@@ -277,41 +235,23 @@ def exercise2():
         plt.savefig(plot_path+'Heatmap_PTCC.png', dpi=500)
         plt.show()
 
-        # #Plot lateral speed vs torque
-        # df = pd.DataFrame({'Torque': torque_values, 'Lateral Speed': lspeed_values})
-        # sns.set_theme(style="whitegrid")
-        # fig, axes = plt.subplots(1, 1, figsize=(10, 10))
-        # sns.lineplot(data=df, x='Torque', y='Lateral Speed', ax=axes)
-        # #axes.set_title('Lateral Speed vs Torque')
-        # axes.set_ylabel('Lateral Speed')
-        # fig.savefig(plot_path+'Torque_vs_Lateral_Speed.png', dpi=500)
-        
-
-        # #line plot of speed vs 2 parameters
-        # sns.set_theme(style="whitegrid")
-        # fig, axes = plt.subplots(1, 1, figsize=(10, 10))
-        # sns.lineplot(data=results_2, ax=axes)
-        # #axes.set_title('Speed vs Wavefrequency and Amplitude')
-        # axes.set_ylabel('Speed')
-        # fig.savefig(plot_path+'Speed_vs_Wavefrequency_Amplitude.png', dpi=500)
-
 
     else:
         #Plot speed vs single parameter
         df = pd.DataFrame({'Wavefrequency': wavefrequency_values, 'Amplitude': amp_values/2, 'Speed': fspeed_values})
         print(df)
         
-        # fig1, axes1 = plt.subplots(1, 1, figsize=(10, 10))
-        # sns.set_theme(style="whitegrid")
-        # sns.lineplot(data=df, x='Wavefrequency', y='Speed', ax=axes1)
-        # #axes1.set_title('Speed vs Wavefrequency')
-        # axes1.set_ylabel('Speed')
-        # fig1.savefig(plot_path+'Wavefrequency_vs_Speed.png', dpi=500)
+        fig1, axes1 = plt.subplots(1, 1, figsize=(10, 10))
+        sns.set_theme(style="whitegrid")
+        sns.lineplot(data=df, x='Wavefrequency', y='Speed', ax=axes1)
+        #axes1.set_title('Speed vs Wavefrequency')
+        axes1.set_ylabel('Speed')
+        fig1.savefig(plot_path+'Wavefrequency_vs_Speed.png', dpi=500)
 
         
         fig2, axes2 = plt.subplots(1, 1, figsize=(10, 10))
         
-        sns.lineplot(data=df, x='Wavefrequency', y='Speed', ax=axes2)
+        sns.lineplot(data=df, x='Amplitude', y='Speed', ax=axes2)
         sns.set_theme(style="whitegrid")
         #axes2.set_title('Amplitude vs Speed')
         axes2.set_ylabel('Speed')
@@ -323,9 +263,6 @@ def exercise2():
 
     
 
-    
-    #print(all_metrics['frequency'].values())
-    
 
 
 if __name__ == '__main__':
