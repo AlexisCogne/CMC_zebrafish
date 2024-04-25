@@ -269,7 +269,7 @@ def exercise2():
         sns.set_theme(style="whitegrid")
         #axes2.set_title('Amplitude vs Speed')
         axes2.set_ylabel('Speed')
-        fig2.savefig(plot_path+'Wavefrequency_vs_Speed.png', dpi=500)
+        fig2.savefig(plot_path+'Amplitude_vs_Speed.png', dpi=500)
 
     
     # plt.tight_layout()
