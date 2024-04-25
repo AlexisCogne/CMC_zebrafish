@@ -12,6 +12,20 @@ import seaborn as sns
 
 
 def calculate_energy(joints_data, joint_angles, times):
+    '''
+    Function to calculate energy used in each simulation
+    Obtain the power by multiplying the torques by the angular velocity at each joint. And then finally integrate the power. 
+    Energy ->  sum the energies for all joints
+
+    Args:
+    joints_data = control.joints
+    joint_angles = control.joints_positions
+    times = control.times
+
+    ouput:
+    energy of simulation
+    
+    '''
     dt = times[1] - times[0]
     angular_velocities = np.diff(joint_angles, axis=0) / dt
     power = joints_data[:-1, :] * angular_velocities
