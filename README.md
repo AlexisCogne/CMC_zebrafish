@@ -1,2 +1,2 @@
 # CMC_zebrafish
-Git for the Zebrafish Project 1 in Computational Motor Control
+Git for the Zebrafish Projects 1 & 2 in Computational Motor Control
