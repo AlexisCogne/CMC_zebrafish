@@ -27,7 +27,7 @@ def plot_time_histories(
     title = kwargs.pop('title', None)
     labels = kwargs.pop('labels', None)
     colors = kwargs.pop('colors', None)
-    xlim = kwargs.pop('xlim', [0, time[-1]])
+    xlim = kwargs.pop('xlim', [time[0], time[-1]])
     ylim = kwargs.pop('ylim', None)
     offset = kwargs.pop('offset', 0)
     savepath = kwargs.pop('savepath', None)
@@ -197,7 +197,7 @@ def plot_2d(results, labels, n_data=300, log=False, cmap=None):
     cbar.set_label(labels[2])
 
 
-def plot_left_right(times, state, left_idx, right_idx, cm="jet", offset=0.3):
+def plot_left_right(times, state, left_idx, right_idx, cm="jet", offset=0.3, save = False, file_path = None):
     """
     plotting left and right states
     Inputs:
@@ -234,9 +234,11 @@ def plot_left_right(times, state, left_idx, right_idx, cm="jet", offset=0.3):
         colors=colors,
         ylabel="Right"
     )
+    if save:
+        plt.savefig(file_path)
 
 
-def plot_trajectory(controller, label=None, color=None, sim_fraction=1):
+def plot_trajectory(controller, label=None, color=None,save = False, xlabel ='x [m]', ylabel = "y [m]", title = "", path = None, sim_fraction=1):
 
     head_positions = np.array(controller.links_positions)[:, 0, :]
     n_steps = head_positions.shape[0]
@@ -247,10 +249,13 @@ def plot_trajectory(controller, label=None, color=None, sim_fraction=1):
     """Plot head positions"""
     plt.plot(head_positions[:-1, 0],
              head_positions[:-1, 1], label=label, color=color)
-    plt.xlabel('x [m]')
-    plt.ylabel('y [m]')
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(title)
     plt.axis('equal')
     plt.grid(True)
+    if save:
+        plt.savefig(path)
 
 
 def plot_positions(times, link_data):
