@@ -17,8 +17,16 @@ class SimulationParameters:
 
         # simulation parameters
         self.n_joints = 15  # number of joints
+        self.sparse = False
         self.timestep = 0.001  # integration time step
         self.n_iterations = 4001  # number of integration time steps
+
+        # controller parameters
+        self.A = 1 #pay attention this is half the "amp" that yields the computed metrics
+        self.freq = 3
+        self.epsilon = 1
+        self.gain= "sinusoidal" # change activation function: "trapezoid", "squared"
+        self.steep = 1
 
         # gui/recording parameters
         self.headless = True  # For headless mode (No GUI, could be faster)
