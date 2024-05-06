@@ -26,23 +26,56 @@ class FiringRateController:
             self.n_iterations)
         self.pars = pars
 
-        self.n_eq = self.n_neurons*4 + self.n_muscle_cells*2 + self.n_neurons * \
-            2  # number of equations: number of CPG eq+muscle cells eq+sensors eq
-        self.muscle_l = 4*self.n_neurons + 2 * \
-            np.arange(0, self.n_muscle_cells)  # muscle cells left indexes
-        self.muscle_r = self.muscle_l+1  # muscle cells right indexes
-        self.all_muscles = 4*self.n_neurons + \
-            np.arange(0, 2*self.n_muscle_cells)  # all muscle cells indexes
+        self.n_eq = self.n_neurons*4 + self.n_muscle_cells*2 + self.n_neurons * 2  # number of equations: number of CPG eq+muscle cells eq+sensors eq
+        
         # vector of indexes for the CPG activity variables - modify this
         # according to your implementation
-        self.all_v = range(self.n_neurons*2)
+        #Setting the gain function based on lab4
+        self.S = self.S_sqrt
+        '''
+        #Eventually can be combined with Project 1
+        if self.pars.gain == "sqrt_max":
+            self.S = self.S_sqrt
+        #elif self.pars.gain == "sinusoidal":
+        #    self.S = self.S_sin
+        #elif self.pars.gain == "trapezoid":
+        #    self.S = self.S_trapezoidal
+        '''
+        
+        #-------------------------------------------------- implementation index vectors
+        #Implementation of index vectors for the firing rate 
+        self.all_v_left  = [i for i in range(n_neurons * 2) if i % 2 == 0]   # Left CPG activity indexes: 0,2,4,... 
+                                                                             #range(0, self.n_neurons)
+        self.all_v_right  = [i for i in range(n_neurons * 2) if i % 2 == 1]  # Right CPG activity indexes: 1,3,5,...
+                                                                             #range(self.n_neurons, 2 * self.n_neurons)
+        self.all_v= range(self.n_neurons*2)
 
-        pylog.warning(
-            "Implement here the vectorization indexed for the equation variables")
+        #Implementation of index vectors for the firing rate adaptation
+        self.all_a_left  = [i for i in range(n_neurons * 2, n_neurons * 4) if i % 2 == 0]  # Left CPG adaptation indexes: 100,102,...
+        self.all_a_right  = [i for i in range(n_neurons * 2, n_neurons * 4) if i % 2 == 1]  # Right CPG adaptation indexes: 101,103,...
+        self.all_a= range(2 * self.n_neurons, 4 * self.n_neurons)  
+
+        #Implementation of index vectors for the muscle cell
+        self.muscle_l = 4*self.n_neurons + 2 * np.arange(0, self.n_muscle_cells)  # muscle cells left indexes
+        self.muscle_r = self.muscle_l+1  # muscle cells right indexes
+        self.all_muscles = 4*self.n_neurons + np.arange(0, 2*self.n_muscle_cells)  # all muscle cells indexes
+
+        #Implementation of index vectors for next parts with sensory feedback
+        sensor_start_index = 4 * self.n_neurons + 2 * self.n_muscle_cells
+        self.all_s_left = [i for i in range(sensor_start_index, sensor_start_index + 2 * self.n_neurons) if i % 2 == 0]  # Left sensor indexes
+        self.all_s_right= [i for i in range(sensor_start_index, sensor_start_index + 2 * self.n_neurons) if i % 2 == 1]  # Right sensor indexes
+        self.all_s= range(4 * self.n_neurons, 4 * self.n_neurons + 2 * self.n_muscle_cells)
+        
+
+        #---------------------------------------------------
+        #pylog.warning(
+        #   "Implement here the vectorization indexed for the equation variables")
 
         self.state = np.zeros([self.n_iterations, self.n_eq])  # equation state
         self.dstate = np.zeros([self.n_eq])  # derivative state
         self.state[0] = np.random.rand(self.n_eq)  # set random initial state
+
+        
 
         self.poses = np.array([
             0.007000000216066837,
@@ -135,6 +168,15 @@ class FiringRateController:
             2 *
             self.n_muscle_cells)  # here you have to final active muscle equations for the 10 joints
 
+
+    def S_sqrt(self, x):
+        '''
+        Gain function for closed loop firing rate controller 
+        '''
+        return np.sqrt(np.maximum(x,0))
+
+
+
     def ode_rhs(self,  _time, state, pos=None):
         """Network_ODE
         You should implement here the right hand side of the system of equations
@@ -149,5 +191,71 @@ class FiringRateController:
         dstate: <np.array>
             Returns derivative of state
         """
+
+        #### Extracting the current state variables ####
+        #rate states
+        r_left = state[self.all_v_left]
+        r_right = state[self.all_v_right]
+        #rate adaptation states
+        a_left = state[self.all_a_left]
+        a_right = state[self.all_a_right]
+        #muscle states
+        m_left = state[self.muscle_l]
+        m_right = state[self.muscle_r]
+        #---------sensory feedback states-------- NEXT PART
+        #s_left = state[self.all_s_left]
+        #s_right = state[self.all_s_right]
+
+
+
+        #### Implementing the closed loop system of equations 4-8 in a vectorial form ####
+
+        # rate equations (inspired by lab 4)
+        dstate[self.all_v_left] = ( -r_left + self.S (self.pars.I - self.pars.b * a_left - self.pars.gin * self.Win.dot(r_right))) / self.pars.tau
+        dstate[self.all_v_right] = (-r_right + self.S(self.pars.I - self.pars.b * a_right - self.pars.gin * self.Win.dot(r_left))) / self.pars.tau
+
+        #rate adaptation equations
+        dstate[self.all_a_left] = (-a_left + self.pars.gamma * r_left) / self.pars.taua       #check if their gamma is rho (I think they used the wrong greek letter :)
+        dstate[self.all_a_right] = (-a_right + self.pars.gamma * r_right) / self.pars.taua    #same to check
+
+        # muscle cells equations
+        dstate[self.muscle_l] = (self.pars.w_V2a2muscle * self.pars.Wcm.dot(r_left) * (1 - m_left) / self.pars.taum_a - m_left / self.pars.taum_d)      
+        #not sure about this parameter w_V2a2muscle, but the values correspond and the fact that is for the muscle
+        dstate[self.muscle_r] = (self.pars.w_V2a2muscle * self.pars.Wcm.dot(r_right) * (1 - m_right) / self.pars.taum_a - m_right / self.pars.taum_d)
+        #same doubts as for the previous one
+
+        #------------same equations with in addition the sensory feedback----------- NEXT PART
+        #dstate[self.all_v_left] = ( -r_left + self.S (self.pars.I - self.pars.b * a_left - self.pars.gin * self.pars.Win.dot(r_right) - self.w_stretch * self.Wss.dot(s_right))) / self.pars.tau
+        #dstate[self.all_v_right] = (-r_right + self.S(self.pars.I - self.pars.b * a_right - self.pars.gin * self.pars.Win.dot(r_left) - self.w_stretch * self.Wss.dot(s_left))) / self.pars.tau
+
+
         return self.dstate
 
+
+
+
+    def general_connectivity_matrix(self, ndesc, nasc):
+        '''
+        Generate a connectivity matrix of given size based on the specific descending and ascending axonal branches
+
+        Params:
+            - ndesc : number of descending connections to the closest caudal CPG cells.
+            - nasc : number of ascending connections to the closest rostral cells.
+
+        Output:
+            - the generated connectivity matrix.
+        '''
+        # Initialization of the connectivity matrix, the size corresponds to the total number of neurons
+        connectivity_matrix = np.zeros((self.n_neurons, self.n_neurons))
+
+        # define the system
+        for i in range(self.n_neurons):
+            for j in range(self.n_neurons):
+                # Condition when i <= j and the distance is within ndesc
+                if i <= j and j - i <= ndesc:
+                    connectivity_matrix[i, j] = 1 / (j - i + 1)
+                # Condition when i > j and the distance is within nasc
+                elif i > j and i - j <= nasc:
+                    connectivity_matrix[i, j] = 1 / (i - j + 1)
+
+        return connectivity_matrix
