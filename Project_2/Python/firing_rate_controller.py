@@ -98,9 +98,9 @@ class FiringRateController:
         # initialize ode solver
         self.f = self.ode_rhs
         #Initialize connectivity matrices
-        self.Win = self.general_connectivity_matrix(self.n_neurons, self.n_desc, self.n_asc)
-        self.Wmc = self.mc_connectivity_matrix(None, self.n_muscle_cells, self.n_neurons)
-        self.Wss = self.general_connectivity_matrix(self.n_neurons, self.n_desc_str, self.n_asc_str)
+        self.Win = self.general_connectivity_matrix( self.n_desc, self.n_asc)
+        self.Wmc = self.mc_connectivity_matrix( self.n_muscle_cells, self.n_neurons)
+        self.Wss = self.general_connectivity_matrix( self.n_desc_str, self.n_asc_str)
         
 
         # stepper function selection
@@ -243,9 +243,9 @@ class FiringRateController:
         self.dstate[self.all_a_right] = (-a_right + rho * r_right) / self.pars.taua    #same to check
 
         # muscle cells equations
-        self.dstate[self.muscle_l] = (gcm * self.pars.Wcm.dot(r_left) * (1 - m_left) / self.pars.taum_a - m_left / self.pars.taum_d)      
+        self.dstate[self.muscle_l] = (gcm * self.pars.Wmc.dot(r_left) * (1 - m_left) / self.pars.taum_a - m_left / self.pars.taum_d)      
         #not sure about this parameter w_V2a2muscle, but the values correspond and the fact that is for the muscle
-        self.dstate[self.muscle_r] = (gcm * self.pars.Wcm.dot(r_right) * (1 - m_right) / self.pars.taum_a - m_right / self.pars.taum_d)
+        self.dstate[self.muscle_r] = (gcm * self.pars.Wmc.dot(r_right) * (1 - m_right) / self.pars.taum_a - m_right / self.pars.taum_d)
         #same doubts as for the previous one
 
         #------------same equations with in addition the sensory feedback----------- NEXT PART
