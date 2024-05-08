@@ -52,6 +52,12 @@ def exercise3(**kwargs):
         right_idx,
         cm="jet",
         offset=0.1)
+    
+    #printing the metrics
+    print(f'Parameters: frequency={np.round(0.5*controller.metrics["frequency"],5)}, Amp={np.round(0.5*controller.metrics["amp"],5)}, wavefrequency={np.round(controller.metrics["wavefrequency"],5)}')
+    
+    print("ptcc: ", "{:.2e}".format(controller.metrics["ptcc"]))
+
 
 
 
