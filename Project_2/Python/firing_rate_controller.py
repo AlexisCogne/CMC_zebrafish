@@ -20,9 +20,10 @@ class FiringRateController:
         self.n_muscle_cells = pars.n_muscle_cells
         self.n_desc = pars.n_desc
         self.n_asc = pars.n_asc
-        self.timestep = pars.timestep
         self.n_desc_str = pars.n_desc_str
         self.n_asc_str = pars.n_asc_str
+        self.timestep = pars.timestep
+        
 
         self.times = np.linspace(
             0,
@@ -33,8 +34,7 @@ class FiringRateController:
 
         self.n_eq = self.n_neurons*4 + self.n_muscle_cells*2 + self.n_neurons * 2  # number of equations: number of CPG eq+muscle cells eq+sensors eq
         
-        # vector of indexes for the CPG activity variables - modify this
-        # according to your implementation
+        # vector of indexes for the CPG activity variables 
         #Setting the gain function based on lab4
         self.S = self.S_sqrt
         '''
@@ -175,17 +175,16 @@ class FiringRateController:
 
         # Initialize an array of size 2 * self.n_muscle_cells with zeros
         muscle_activations = np.zeros(2 * self.n_muscle_cells)
-        w_act = self.act_strength 
-        # Compute muscle activations based on the iteration
-        for i in range(self.n_muscle_cells):
-            # Accessing the left muscle activation state for joint i
-            mL_activation = self.state[iteration, self.muscle_l[i]]
-            # Accessing the right muscle activation state for joint i
-            mR_activation = self.state[iteration, self.muscle_r[i]]
+        w_act = self.pars.act_strength 
+        # Accessing the left muscle activation state for joint i
+        mL_activation = self.state[iteration, self.muscle_l]
+        # Accessing the right muscle activation state for joint i
+        mR_activation = self.state[iteration, self.muscle_r]
             
+        for i in range(self.n_muscle_cells):
             # Assign the activations for left and right indices
             muscle_activations[2 * i] = w_act* mL_activation[i]   # Even index for left muscle activation
-            muscle_activations[2 * i + 1] = w_act* mR_activation[i]  # Odd index for right muscle activation
+            muscle_activations[2 * i+1] = w_act* mR_activation[i]  # Odd index for right muscle activation
         
         return muscle_activations
 
@@ -235,17 +234,17 @@ class FiringRateController:
         #### Implementing the closed loop system of equations 4-8 in a vectorial form ####
 
         # rate equations (inspired by lab 4)
-        self.dstate[self.all_v_left] = ( -r_left + self.S (self.pars.I - self.pars.b * a_left - gin * self.Win.dot(r_right))) / self.pars.tau
-        self.dstate[self.all_v_right] = (-r_right + self.S(self.pars.I - self.pars.b * a_right - gin * self.Win.dot(r_left))) / self.pars.tau
+        self.dstate[self.all_v_left] = ( -r_left + self.S (self.pars.I + self.pars.Idiff - self.pars.b * a_left - gin * self.Win.dot(r_right))) / self.pars.tau
+        self.dstate[self.all_v_right] = (-r_right + self.S(self.pars.I + self.pars.Idiff - self.pars.b * a_right - gin * self.Win.dot(r_left))) / self.pars.tau
 
         #rate adaptation equations
-        self.dstate[self.all_a_left] = (-a_left + rho * r_left) / self.pars.taua       #check if their gamma is rho (I think they used the wrong greek letter :)
-        self.dstate[self.all_a_right] = (-a_right + rho * r_right) / self.pars.taua    #same to check
+        self.dstate[self.all_a_left] = (-a_left + rho * r_left) / self.pars.taua       
+        self.dstate[self.all_a_right] = (-a_right + rho * r_right) / self.pars.taua   
 
         # muscle cells equations
-        self.dstate[self.muscle_l] = (gcm * self.pars.Wmc.dot(r_left) * (1 - m_left) / self.pars.taum_a - m_left / self.pars.taum_d)      
+        self.dstate[self.muscle_l] = gcm * self.Wmc.dot(r_left) * (1 - m_left) / self.pars.taum_a - m_left / self.pars.taum_d      
         #not sure about this parameter w_V2a2muscle, but the values correspond and the fact that is for the muscle
-        self.dstate[self.muscle_r] = (gcm * self.pars.Wmc.dot(r_right) * (1 - m_right) / self.pars.taum_a - m_right / self.pars.taum_d)
+        self.dstate[self.muscle_r] = gcm * self.Wmc.dot(r_right) * (1 - m_right) / self.pars.taum_a - m_right / self.pars.taum_d
         #same doubts as for the previous one
 
         #------------same equations with in addition the sensory feedback----------- NEXT PART
@@ -276,11 +275,13 @@ class FiringRateController:
         for i in range(self.n_neurons):
             for j in range(self.n_neurons):
                 # Condition when i <= j and the distance is within ndesc
-                if i <= j and j - i <= ndesc:
+                if i <= j and j-i <= ndesc:
                     connectivity_matrix[i, j] = 1 / (j - i + 1)
                 # Condition when i > j and the distance is within nasc
                 elif i > j and i - j <= nasc:
                     connectivity_matrix[i, j] = 1 / (i - j + 1)
+                else:
+                    connectivity_matrix[i,j] = 0
 
         return connectivity_matrix
 
@@ -312,12 +313,12 @@ class FiringRateController:
             
             for j in range(n_neurons):
                 # Set the connection weight based on the specified range
-                if lower_limit <= j < upper_limit:
+                if lower_limit <= j  and j <= upper_limit- 1:
                     # If j is within range: set connection weight to 1
-                    connectivity_matrix[i][j] = 1
+                    connectivity_matrix[i, j] = 1
                 else:
                     # Outside range: set connection weight to 0 
-                    connectivity_matrix[i][j] = 0
+                    connectivity_matrix[i,j] = 0
 
         return connectivity_matrix
 
