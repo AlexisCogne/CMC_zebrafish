@@ -275,14 +275,14 @@ class FiringRateController:
         for i in range(self.n_neurons):
             for j in range(self.n_neurons):
                 # Condition when i <= j and the distance is within ndesc
-                if i <= j and j-i <= ndesc:
+                if i <= j and j-i <= nasc:
                     connectivity_matrix[i, j] = 1 / (j - i + 1)
                 # Condition when i > j and the distance is within nasc
-                elif i > j and i - j <= nasc:
+                elif i > j and i - j <= ndesc:
                     connectivity_matrix[i, j] = 1 / (i - j + 1)
                 else:
                     connectivity_matrix[i,j] = 0
-
+  
         return connectivity_matrix
 
 
