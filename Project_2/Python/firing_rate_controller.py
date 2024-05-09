@@ -48,32 +48,27 @@ class FiringRateController:
         '''
         
         #-------------------------------------------------- implementation index vectors
-        #Implementation of index vectors for the firing rate 
+        #Implementation of index vectors for the firing rate (0 to 99)
         self.all_v_left  = np.arange(0, self.n_neurons * 2 , 2)  # Left CPG activity indexes: 0,2,4,... ; don't include +1 !
         self.all_v_right  = self.all_v_left + 1  # Right CPG activity indexes: 1,3,5,...
         self.all_v= range(self.n_neurons*2)
 
-        #Implementation of index vectors for the firing rate adaptation
+        #Implementation of index vectors for the firing rate adaptation (100 to 199)
         self.all_a_left  = np.arange(2 * self.n_neurons, 4 * self.n_neurons , 2)   # Left CPG adaptation indexes: 100,102,...
         self.all_a_right  = self.all_a_left + 1                                            # Right CPG adaptation indexes: 101,103,...
         self.all_a= range(2 * self.n_neurons, 4 * self.n_neurons)  
 
-        #Implementation of index vectors for the muscle cell
+        #Implementation of index vectors for the muscle cell (200 to 219)
         self.muscle_l = 4*self.n_neurons + 2 * np.arange(0, self.n_muscle_cells)  # muscle cells left indexes
         self.muscle_r = self.muscle_l+1  # muscle cells right indexes
         self.all_muscles = 4*self.n_neurons + np.arange(0, 2*self.n_muscle_cells)  # all muscle cells indexes
 
-        #---------Implementation of index vectors for next parts with sensory feedback
-        #sensor_start_index = 4 * self.n_neurons + 2 * self.n_muscle_cells
-        #self.all_s_left = np.arange(4 * self.n_neurons, 4 * self.n_neurons + 2 * self.n_muscle_cells, 2)  # Left sensor indexes
-        #self.all_s_right= self.all_s_left  + 1  # Right sensor indexes
-        #self.all_s= range(4 * self.n_neurons, 4 * self.n_neurons + 2 * self.n_muscle_cells)
-        
+        # Sensor indexes (220 to 319)
+        self.all_s_left = np.arange(4 * self.n_neurons, 4 * self.n_neurons + 2 * self.n_muscle_cells, 2)  # Left sensor indexes
+        self.all_s_right= self.all_s_left  + 1  # Right sensor indexes
+        self.all_s= range(4 * self.n_neurons, 4 * self.n_neurons + 2 * self.n_muscle_cells)
 
-        #---------------------------------------------------
-        #pylog.warning(
-        #   "Implement here the vectorization indexed for the equation variables")
-
+        """ Initializing state and dstate"""
         self.state = np.zeros([self.n_iterations, self.n_eq])  # equation state
         self.dstate = np.zeros([self.n_eq])  # derivative state
         self.state[0] = np.random.rand(self.n_eq)  # set random initial state
@@ -222,9 +217,9 @@ class FiringRateController:
         #muscle states
         m_left = state[self.muscle_l]
         m_right = state[self.muscle_r]
-        #---------sensory feedback states-------- NEXT PART
-        #s_left = state[self.all_s_left]
-        #s_right = state[self.all_s_right]
+        #sensory feedback states
+        s_left = state[self.all_s_left]
+        s_right = state[self.all_s_right]
 
         #clarify parameters:
         rho = self.pars.gamma
