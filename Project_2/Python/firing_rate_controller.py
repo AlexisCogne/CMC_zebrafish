@@ -235,7 +235,7 @@ class FiringRateController:
 
         # rate equations (inspired by lab 4)
         self.dstate[self.all_v_left] = ( -r_left + self.S (self.pars.I + self.pars.Idiff - self.pars.b * a_left - gin * self.Win.dot(r_right))) / self.pars.tau
-        self.dstate[self.all_v_right] = (-r_right + self.S(self.pars.I + self.pars.Idiff - self.pars.b * a_right - gin * self.Win.dot(r_left))) / self.pars.tau
+        self.dstate[self.all_v_right] = (-r_right + self.S(self.pars.I - self.pars.Idiff - self.pars.b * a_right - gin * self.Win.dot(r_left))) / self.pars.tau
 
         #rate adaptation equations
         self.dstate[self.all_a_left] = (-a_left + rho * r_left) / self.pars.taua       
@@ -248,8 +248,8 @@ class FiringRateController:
         #same doubts as for the previous one
 
         #------------same equations with in addition the sensory feedback----------- NEXT PART
-        #self.dstate[self.all_v_left] = ( -r_left + self.S (self.pars.I - self.pars.b * a_left - gin * self.pars.Win.dot(r_right) - self.w_stretch * self.Wss.dot(s_right))) / self.pars.tau
-        #self.dstate[self.all_v_right] = (-r_right + self.S(self.pars.I - self.pars.b * a_right - gin * self.pars.Win.dot(r_left) - self.w_stretch * self.Wss.dot(s_left))) / self.pars.tau
+        #self.dstate[self.all_v_left] = ( -r_left + self.S (self.pars.I  + self.pars.Idiff - self.pars.b * a_left - gin * self.pars.Win.dot(r_right) - self.w_stretch * self.Wss.dot(s_right))) / self.pars.tau
+        #self.dstate[self.all_v_right] = (-r_right + self.S(self.pars.I - self.pars.Idiff  - self.pars.b * a_right - gin * self.pars.Win.dot(r_left) - self.w_stretch * self.Wss.dot(s_left))) / self.pars.tau
 
 
         return self.dstate
