@@ -64,9 +64,9 @@ class FiringRateController:
         self.all_muscles = 4*self.n_neurons + np.arange(0, 2*self.n_muscle_cells)  # all muscle cells indexes
 
         # Sensor indexes (220 to 319)
-        self.all_s_left = np.arange(4 * self.n_neurons, 4 * self.n_neurons + 2 * self.n_muscle_cells, 2)  # Left sensor indexes
+        self.all_s_left = 4 * self.n_neurons + 2 * self.n_muscle_cells + np.arange(0, 2*self.n_neurons, 2)  # Left sensor indexes
         self.all_s_right= self.all_s_left  + 1  # Right sensor indexes
-        self.all_s= range(4 * self.n_neurons, 4 * self.n_neurons + 2 * self.n_muscle_cells)
+        self.all_s=  4 * self.n_neurons + 2 * self.n_muscle_cells + np.arange(0, 2*self.n_neurons)  # All sensor indexes
 
         """ Initializing state and dstate"""
         self.state = np.zeros([self.n_iterations, self.n_eq])  # equation state
@@ -229,8 +229,10 @@ class FiringRateController:
         #### Implementing the closed loop system of equations 4-8 in a vectorial form ####
 
         # rate equations (inspired by lab 4)
-        self.dstate[self.all_v_left] = ( -r_left + self.S (self.pars.I + self.pars.Idiff - self.pars.b * a_left - gin * self.Win.dot(r_right))) / self.pars.tau
-        self.dstate[self.all_v_right] = (-r_right + self.S(self.pars.I - self.pars.Idiff - self.pars.b * a_right - gin * self.Win.dot(r_left))) / self.pars.tau
+        self.dstate[self.all_v_left] = ( -r_left + self.S (self.pars.I  + self.pars.Idiff - self.pars.b * a_left - gin * self.Win.dot(r_right) - self.pars.w_stretch * self.Wss.dot(s_right))) / self.pars.tau
+        self.dstate[self.all_v_right] = (-r_right + self.S(self.pars.I - self.pars.Idiff  - self.pars.b * a_right - gin * self.Win.dot(r_left) - self.pars.w_stretch * self.Wss.dot(s_left))) / self.pars.tau
+        #self.dstate[self.all_v_left] = ( -r_left + self.S (self.pars.I + self.pars.Idiff - self.pars.b * a_left - gin * self.Win.dot(r_right))) / self.pars.tau
+        #self.dstate[self.all_v_right] = (-r_right + self.S(self.pars.I - self.pars.Idiff - self.pars.b * a_right - gin * self.Win.dot(r_left))) / self.pars.tau
 
         #rate adaptation equations
         self.dstate[self.all_a_left] = (-a_left + rho * r_left) / self.pars.taua       
@@ -238,18 +240,20 @@ class FiringRateController:
 
         # muscle cells equations
         self.dstate[self.muscle_l] = gcm * self.Wmc.dot(r_left) * (1 - m_left) / self.pars.taum_a - m_left / self.pars.taum_d      
-        #not sure about this parameter w_V2a2muscle, but the values correspond and the fact that is for the muscle
         self.dstate[self.muscle_r] = gcm * self.Wmc.dot(r_right) * (1 - m_right) / self.pars.taum_a - m_right / self.pars.taum_d
-        #same doubts as for the previous one
 
-        #------------same equations with in addition the sensory feedback----------- NEXT PART
-        self.dstate[self.all_v_left] = ( -r_left + self.S (self.pars.I  + self.pars.Idiff - self.pars.b * a_left - gin * self.pars.Win.dot(r_right) - self.w_stretch * self.Wss.dot(s_right))) / self.pars.tau
-        self.dstate[self.all_v_right] = (-r_right + self.S(self.pars.I - self.pars.Idiff  - self.pars.b * a_right - gin * self.pars.Win.dot(r_left) - self.w_stretch * self.Wss.dot(s_left))) / self.pars.tau
-
-
+        # stretch sensory feedback
+        joint_angles = pos
+        print("joint_angles", joint_angles.shape)
+        print("self.poses_ext", self.poses_ext.shape)
+        # 10 joints: their position is in self.poses and their joint angle is saved in joint_angles = pos
+        #Self.poses_ext is a linspace between first and last joint
+        theta_i = CubicSpline(self.poses, joint_angles)(self.poses_ext)
+        
+        self.dstate[self.all_s_left] = (-s_left + self.S(theta_i)*(1-s_left)) / self.pars.tau_str
+        self.dstate[self.all_s_right] = (-s_right + self.S(-theta_i)*(1-s_right)) / self.pars.tau_str
+        
         return self.dstate
-
-
 
 
     def general_connectivity_matrix(self, ndesc, nasc):
