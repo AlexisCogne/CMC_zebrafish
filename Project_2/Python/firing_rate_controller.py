@@ -244,8 +244,6 @@ class FiringRateController:
 
         # stretch sensory feedback
         joint_angles = pos
-        print("joint_angles", joint_angles.shape)
-        print("self.poses_ext", self.poses_ext.shape)
         # 10 joints: their position is in self.poses and their joint angle is saved in joint_angles = pos
         #Self.poses_ext is a linspace between first and last joint
         theta_i = CubicSpline(self.poses, joint_angles)(self.poses_ext)
