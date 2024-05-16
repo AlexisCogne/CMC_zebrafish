@@ -27,7 +27,7 @@ def plot_time_histories(
     title = kwargs.pop('title', None)
     labels = kwargs.pop('labels', None)
     colors = kwargs.pop('colors', None)
-    xlim = kwargs.pop('xlim', [time[0], time[-1]])
+    xlim = kwargs.pop('xlim', [time[0], time[-1]]) ## Updated by alexis to have plots starting from the value we want
     ylim = kwargs.pop('ylim', None)
     offset = kwargs.pop('offset', 0)
     savepath = kwargs.pop('savepath', None)
@@ -37,6 +37,9 @@ def plot_time_histories(
     xticks_labels = kwargs.pop('xticks_labels', None)
     yticks_labels = kwargs.pop('xticks_labels', None)
     closefig = kwargs.pop('closefig', True)
+    ncol = kwargs.pop('ncol', 1) ## Added by alexis for separate columns in plot
+    loc = kwargs.pop('loc', 0) ## Added by alexis for separate columns in plot
+    specific_labels = kwargs.pop('specific_labels', None) ## Added by alexis for showing only certain labels
 
     n_signals = state.shape[1]
 
@@ -66,6 +69,11 @@ def plot_time_histories(
     for (idx, vector) in enumerate(state.transpose()):
         if not labels:
             label = None
+        elif specific_labels is not None:## Added by alexis
+            if idx in specific_labels:  # Check if the current index should be labeled
+                label = labels[idx]  # Assign label from the labels list
+            else:
+                label = None  # If not, do not label
         else:
             label = labels[idx]
         plt.plot(
@@ -75,7 +83,7 @@ def plot_time_histories(
             color=colors[idx],
             linewidth=lw)
     if labels:
-        plt.legend()
+        plt.legend(ncol=ncol, loc = loc) ## Added by alexis for separate columns in plot
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.xlim(xlim)
@@ -108,7 +116,7 @@ def plot_time_histories_multiple_windows(
     title = kwargs.pop('title', None)
     labels = kwargs.pop('labels', None)
     colors = kwargs.pop('colors', None)
-    xlim = kwargs.pop('xlim', [0, time[-1]])
+    xlim = kwargs.pop('xlim', [time[0], time[-1]])
     ylim = kwargs.pop('ylim', None)
     savepath = kwargs.pop('savepath', None)
     lw = kwargs.pop('lw', 1.0)
