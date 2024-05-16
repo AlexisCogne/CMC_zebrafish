@@ -1,5 +1,5 @@
 
-from plotting_common import plot_time_histories, save_figure
+from plotting_common import plot_time_histories, save_figure, plot_time_histories_multiple_windows
 from simulation_parameters import SimulationParameters
 from util.run_closed_loop import run_single, run_multiple
 import matplotlib.pyplot as plt
@@ -39,7 +39,9 @@ def exercise6():
         for i, gss in enumerate(np.linspace(g_min, g_max, nsim))
         ]
     plotting_ranges = (g_min, g_max, nsim)
-    vary_gss(pars_list_B, plotting_ranges)
+    list__ranges = np.linspace(g_min, g_max, nsim)
+    #idx, best_speed = vary_gss(pars_list_B, plotting_ranges)
+    #print(f"Best g_ss value: {list__ranges[idx]} with speed {best_speed}")
 
 
 """ Functions for plotting and varying g_ss"""
@@ -55,10 +57,20 @@ def plotting_A(parameters, folder_path = "figures/"):
     plt.show()
 
     # Plotting muscle cells activities
-    name_figure = "6_muscle_cells_activities.png"
+    left_idx = 200 + 2 * np.arange(0, 10)
+    name_figure = "6_muscle_cells_left_activities.png"
     file_path = os.path.join(folder_path, name_figure)
-    plt.figure("muscle_cells_activities")
-    plot_time_histories(controller.times, controller.state[:, 200:220], savepath = file_path)
+    plt.figure("muscle_cells_activities_left")
+    #plot_time_histories(controller.times, controller.state[:, 200:220], savepath = file_path)
+    plot_time_histories_multiple_windows(controller.times[3000:3500], controller.state[3000:3500, left_idx], savepath = file_path)
+    plt.show()
+
+    right_idx = left_idx + 1
+    name_figure = "6_muscle_cells_right_activities.png"
+    file_path = os.path.join(folder_path, name_figure)
+    plt.figure("muscle_cells_activities_right")
+    #plot_time_histories(controller.times, controller.state[:, 200:220], savepath = file_path)
+    plot_time_histories_multiple_windows(controller.times[3000:3500], controller.state[3000:3500, right_idx], savepath = file_path)
     plt.show()
 
     # Plotting sensory neurons activities
@@ -72,7 +84,16 @@ def plotting_A(parameters, folder_path = "figures/"):
     name_figure = "6_joint_angles.png"
     file_path = os.path.join(folder_path, name_figure)
     plt.figure("joint_angles")
-    plot_time_histories(controller.times, controller.joints_positions, savepath = file_path)
+    joint_angles = controller.joints_positions
+    plot_time_histories(
+        controller.times[3000:3500], 
+        joint_angles[3000:3500,:], 
+        ylabel= "Joint angles [-]", 
+        labels = [f"joint {i}" for i in range(joint_angles.shape[1])],
+        loc = 8, 
+        ncol = 5, 
+        specific_labels = [12,13,14],
+        savepath = file_path)
     plt.show()
 
 def vary_gss(parameters, plotting_ranges, folder_path = "figures/"):
@@ -108,6 +129,9 @@ def vary_gss(parameters, plotting_ranges, folder_path = "figures/"):
     plt.tight_layout()
     plt.savefig(os.path.join(folder_path, name_figure))
     plt.show()
+
+    idx, best_speed = max(enumerate(forward_speed), key=lambda x: x[1]) # Find the index and value of the best speed
+    return idx, best_speed
 
 if __name__ == '__main__':
     exercise6()
