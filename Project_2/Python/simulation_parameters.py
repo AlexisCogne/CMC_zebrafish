@@ -80,7 +80,7 @@ class SimulationParameters:
         self.w_inh = 2  # inhibitory strength
 
         # stretch pars
-        self.w_stretch = 1  # feedback strength
+        self.w_stretch = 0  # feedback strength
         self.n_asc_str = 10  # number of ascending stretch connections
         self.n_desc_str = 0  # number of descending stretch connections
         self.tau_str = 0.005  # stretch time scale
