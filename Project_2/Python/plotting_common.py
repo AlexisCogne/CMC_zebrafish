@@ -300,3 +300,22 @@ def save_figures(**kwargs):
     for name in figures:
         save_figure(name, extensions=kwargs.pop('extensions', ['pdf']))
 
+def plot_metric_vs_parameter(parameter_values, metric_values, parameter_label, metric_label, save_path=None):
+    """
+    Plot a metric against a parameter.
+
+    Parameters:
+    - parameter_values: Values of the parameter
+    - metric_values: Values of the metric
+    - parameter_label: Label for the parameter axis
+    - metric_label: Label for the metric axis
+    - save_path: Path to save the plot. If None, the plot will not be saved.
+    """
+    plt.plot(parameter_values, metric_values)
+    plt.xlabel(parameter_label)
+    plt.ylabel(metric_label)
+    plt.title(f"{metric_label} vs {parameter_label}")
+    plt.grid(True)
+    if save_path:
+        plt.savefig(save_path)
+    plt.show()
