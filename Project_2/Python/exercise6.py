@@ -17,13 +17,17 @@ def exercise6():
     os.makedirs(log_path, exist_ok=True)
 
     # Question A - Plotting of activities of CPG neurons, muscle cells and sensory neurons as well as joint angles
+    gss = 0
+    time_interval = [3000, 3500]
+    neurons_interval = [0,10]
     pars_list_A = SimulationParameters(
         n_iterations=5001,
         log_path=log_path,
         compute_metrics=3,
         return_network=True,
+        w_stretch = gss,
         )
-    plotting_A(pars_list_A)
+    plotting_A(pars_list_A, gss, time_interval, neurons_interval) # Using w_stretch = 2 
 
     # Question B - Varying g_ss
     g_min = 0
@@ -45,49 +49,51 @@ def exercise6():
 
 
 """ Functions for plotting and varying g_ss"""
-def plotting_A(parameters, folder_path = "figures/"):
+def plotting_A(parameters, gss, plot_interval, neurons_interval, folder_path = "figures/"):
     # Run the simulation
     controller = run_single(parameters)
+    a, b = plot_interval[0], plot_interval[1] # Plotting for a certain time interval
+    c, d = neurons_interval[0], neurons_interval[1] # Plotting only certain CPG and sensory neurons
 
     # Plotting CPG activities
-    name_figure = "6_CPG_activities.png"
+    name_figure = f"6_CPG_activities_gss={gss}.png"
     file_path = os.path.join(folder_path, name_figure)
     plt.figure("CPG_activities")
-    plot_time_histories(controller.times, controller.state[:, :100], savepath = file_path)
+    plot_time_histories(controller.times[a:b], controller.state[a:b, c:d:2], savepath = file_path)
     plt.show()
 
     # Plotting muscle cells activities
     left_idx = 200 + 2 * np.arange(0, 10)
-    name_figure = "6_muscle_cells_left_activities.png"
+    name_figure = f"6_muscle_cells_left_activities_gss={gss}.png"
     file_path = os.path.join(folder_path, name_figure)
     plt.figure("muscle_cells_activities_left")
     #plot_time_histories(controller.times, controller.state[:, 200:220], savepath = file_path)
-    plot_time_histories_multiple_windows(controller.times[3000:3500], controller.state[3000:3500, left_idx], savepath = file_path)
+    plot_time_histories_multiple_windows(controller.times[a:b], controller.state[a:b, left_idx], savepath = file_path)
     plt.show()
 
     right_idx = left_idx + 1
-    name_figure = "6_muscle_cells_right_activities.png"
+    name_figure = f"6_muscle_cells_right_activities_gss={gss}.png"
     file_path = os.path.join(folder_path, name_figure)
     plt.figure("muscle_cells_activities_right")
     #plot_time_histories(controller.times, controller.state[:, 200:220], savepath = file_path)
-    plot_time_histories_multiple_windows(controller.times[3000:3500], controller.state[3000:3500, right_idx], savepath = file_path)
+    plot_time_histories_multiple_windows(controller.times[a:b], controller.state[a:b, right_idx], savepath = file_path)
     plt.show()
 
     # Plotting sensory neurons activities
-    name_figure = "6_sensory_neurons_activities.png"
+    name_figure = f"6_sensory_neurons_activities_gss={gss}.png"
     file_path = os.path.join(folder_path, name_figure)
     plt.figure("sensory_neurons_activities")
-    plot_time_histories(controller.times, controller.state[:,220:320], savepath = file_path)
+    plot_time_histories(controller.times[a:b], controller.state[a:b,220+c:220+d:2], savepath = file_path)
     plt.show()
 
     # Plotting joint angle positions
-    name_figure = "6_joint_angles.png"
+    name_figure = f"6_joint_angles_gss={gss}.png"
     file_path = os.path.join(folder_path, name_figure)
     plt.figure("joint_angles")
     joint_angles = controller.joints_positions
     plot_time_histories(
-        controller.times[3000:3500], 
-        joint_angles[3000:3500,:], 
+        controller.times[a:b], 
+        joint_angles[a:b,:], 
         ylabel= "Joint angles [-]", 
         labels = [f"joint {i}" for i in range(joint_angles.shape[1])],
         loc = 8, 
