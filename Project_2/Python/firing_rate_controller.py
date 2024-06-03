@@ -130,8 +130,16 @@ class FiringRateController:
             The solution x_t{n+1} of the Euler Maruyama scheme
             x_new = x_prev-0.1*x_prev*dt+sigma*sqrt(dt)*Wiener
         """
-
+        theta = 0.1 # Fixed
         dx_process = np.zeros_like(x_prev)
+
+        # Wiener process (Mean = 0, Variance = timestep)
+        dW_t = np.random.normal(loc = 0, scale = np.sqrt(timestep), size=x_prev.shape)
+
+        # Euler-Maruyama scheme update (Function is given further below)
+        dx_process =  - theta * x_prev * timestep + sigma * dW_t
+
+        return dx_process
 
     def step_euler(self, iteration, time, timestep, pos=None):
         """Euler step"""

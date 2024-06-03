@@ -160,6 +160,76 @@ def plot_time_histories_multiple_windows(
             plt.close()
 
 
+def plot_time_histories_multiple_windows_alexis(
+    time: np.array,
+    state: np.array,
+    **kwargs,
+):
+    """
+    Plot time histories of a vector of states on multiple subplots
+    time: array of times
+    state: array of states with shape (niterations,nvar)
+    kwargs: optional plotting properties (see below)
+    """
+
+    xlabel = kwargs.pop('xlabel', "Time [s]")
+    #ylabel = kwargs.pop('ylabel', "Activity [-]")
+    ylabels = kwargs.pop('ylabels', None)
+    title = kwargs.pop('title', None)
+    labels = kwargs.pop('labels', None)
+    colors = kwargs.pop('colors', None)
+    xlim = kwargs.pop('xlim', [time[0], time[-1]])
+    ylim = kwargs.pop('ylim', None)
+    savepath = kwargs.pop('savepath', None)
+    lw = kwargs.pop('lw', 1.0)
+    xticks = kwargs.pop('xticks', None)
+    yticks = kwargs.pop('yticks', None)
+    xticks_labels = kwargs.pop('xticks_labels', None)
+    yticks_labels = kwargs.pop('xticks_labels', None)
+    closefig = kwargs.pop('closefig', True)
+
+    if isinstance(colors, list) and len(colors) == state.shape[1]:
+        colors = colors
+    elif not isinstance(colors, list):
+        colors = [colors for _ in range(state.shape[1])]
+    else:
+        raise Exception("Color list not a vecotor of the correct size!")
+
+    n = state.shape[1]
+    if title:
+        plt.figure(title)
+    for (idx, vector) in enumerate(state.transpose()):
+        if not labels:
+            label = None
+        else:
+            label = labels[idx]
+        plt.subplot(n, 1, idx+1)
+        plt.plot(time, vector, label=label, color=colors[idx], linewidth=lw)
+        if ylabels is not None:
+            ylabel = ylabels[idx]
+            plt.ylabel(f"Cell #{ylabel}", rotation = 0, labelpad = 50)
+        plt.xlim(xlim)
+        plt.ylim(ylim)
+        if yticks is None:  # If yticks are not provided, set them to bottom and middle
+            y_min, y_max = plt.ylim()
+            plt.yticks([y_min, (y_max + y_min) / 2])
+    if labels:
+        plt.legend()
+    plt.xlabel(xlabel)
+    plt.subplots_adjust(top=0.95)
+    plt.subplots_adjust(bottom=0.1)
+    plt.subplots_adjust(hspace=0.1) 
+    plt.subplots_adjust(left=0.2)
+    plt.grid(False)
+    if xticks:
+        plt.xticks(xticks, labels=xticks_labels)
+    if yticks:
+        plt.yticks(yticks, labels=yticks_labels)
+    if savepath:
+        plt.savefig(savepath)
+        if closefig:
+            plt.close()
+
 def plot_2d(results, labels, n_data=300, log=False, cmap=None):
     """Plot result
 
