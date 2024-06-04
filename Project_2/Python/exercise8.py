@@ -73,7 +73,7 @@ def feedback_investigation(pars_list, w_str_range, sigma_range):
     plt.imshow(ptcc_array, cmap=cmap_custom, norm=norm, origin='lower')
 
     # Set the colorbar with the appropriate normalization and labels
-    cb = plt.colorbar(label='Phase Transition Coupling Coefficient [-]')
+    cb = plt.colorbar(label='Peak-to-Through Correlation Coefficients [-]')
     cb.set_ticks([vmin, threshold, vmax])
     cb.set_ticklabels([str(0), str(threshold), str(round(vmax,1))])
 
