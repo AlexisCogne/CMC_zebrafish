@@ -87,19 +87,33 @@ def exercise4():
     controllers = run_multiple(pars_list, num_process=8)
     #print("Controller keys: ",controllers[0].metrics.keys())
     # Call collect_metrics with the list of controllers and the desired metric key
-    metrics = collect_metrics(controllers, 'ptcc')
-
-    # Plot the collected metric values against I_arr
-    plot_metric_vs_parameter(I_arr, metrics, 'I', 'ptcc', save_path + 'ptcc_vs_I.png')
+    ptcc_vals = collect_metrics(controllers, 'ptcc')
 
     # Call the function with I_arr and metrics list, and specify the threshold
-    start_index, end_index, start_range, end_range = find_range_above_threshold(I_arr, metrics, 1.5)
+    start_index, end_index, start_range, end_range = find_range_above_threshold(I_arr, ptcc_vals, 1.5)
 
     # Print the range of I values where the metric is above 1.5
     if start_range is not None and end_range is not None:
         print(f"Range of I values where the metric is above 1.5: [{start_range}, {end_range}]")
     else:
         print("No range found where the metric is above 1.5")
+
+    print([start_index, end_index])
+
+    # Plot the collected metric values against I_arr
+    plt.figure(figsize=(12, 10))
+    plot_metric_vs_parameter(I_arr, ptcc_vals, 'I', 'ptcc', save_path=save_path + 'ptcc_vs_I.png')
+
+    
+    wavefrequency_vals = collect_metrics(controllers, 'wavefrequency')
+    plot_metric_vs_parameter(I_arr, wavefrequency_vals, 'I', 'Wave Frequency', range_values=[start_index,end_index], save_path=save_path + 'wavefrequency_vs_I.png',color='r')
+
+    frequency_vals = collect_metrics(controllers, 'frequency')
+    plot_metric_vs_parameter(I_arr, frequency_vals, 'I', 'Frequency', range_values=[start_index,end_index], save_path=save_path + 'frequency_vs_I.png',color='b')
+    
+    plt.figure(figsize=(12, 10))
+    fspeed_vals = collect_metrics(controllers, 'fspeed_cycle')
+    plot_metric_vs_parameter(I_arr, fspeed_vals, 'I', 'fspeed', save_path=save_path + 'speed_vs_I.png',color='g')
     '''
     
     start_range, end_range = 26.3, 26.6

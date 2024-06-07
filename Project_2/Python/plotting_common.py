@@ -370,7 +370,7 @@ def save_figures(**kwargs):
     for name in figures:
         save_figure(name, extensions=kwargs.pop('extensions', ['pdf']))
 
-def plot_metric_vs_parameter(parameter_values, metric_values, parameter_label, metric_label, label=None, save_path=None):
+def plot_metric_vs_parameter(parameter_values, metric_values, parameter_label, metric_label, range_values=[], label=None, save_path=None, color='b'):
     """
     Plot a metric against a parameter.
 
@@ -382,13 +382,39 @@ def plot_metric_vs_parameter(parameter_values, metric_values, parameter_label, m
     - label: Label for the line plot (optional)
     - save_path: Path to save the plot. If None, the plot will not be saved.
     """
-    plt.plot(parameter_values, metric_values, label=label)
-    plt.xlabel(parameter_label)
-    plt.ylabel(metric_label)
-    plt.title(f"{metric_label} vs {parameter_label}")
-    plt.grid(True)
-    if label:
-        plt.legend()
-    if save_path:
-        plt.savefig(save_path)
-    plt.show()
+    if len(range_values)>0:
+        range_start = range_values[0]
+        range_end = range_values[1]
+        #make array of indices in range
+        indices = [i for i in range(range_start, range_end)]
+        plt.plot([parameter_values[i] for i in indices], [metric_values[i] for i in indices], label=label, color=color)
+        plt.xlabel(parameter_label)
+        if metric_label == 'Frequency':
+            plt.ylabel(metric_label + ' [Hz]')
+        elif metric_label == 'lspeed' or metric_label == 'fspeed':
+            plt.ylabel(metric_label + ' [m/s]')
+        else:
+            plt.ylabel(metric_label)
+        #plt.title(f"{metric_label} vs {parameter_label}")
+        plt.grid(True)
+        if label:
+            plt.legend()
+        if save_path:
+            plt.savefig(save_path)
+        plt.show()
+    else:
+        plt.plot(parameter_values, metric_values, label=label, color=color)
+        plt.xlabel(parameter_label)
+        if metric_label == 'Frequency':
+            plt.ylabel(metric_label + ' [Hz]')
+        elif metric_label == 'lspeed' or metric_label == 'fspeed':
+            plt.ylabel(metric_label + ' [m/s]')
+        else:
+            plt.ylabel(metric_label)
+        #plt.title(f"{metric_label} vs {parameter_label}")
+        plt.grid(True)
+        if label:
+            plt.legend()
+        if save_path:
+            plt.savefig(save_path)
+        plt.show()

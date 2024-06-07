@@ -20,9 +20,9 @@ def exercise7():
     # Question B - Varying g_ss
     g_min = 0
     g_max = 15
-    nsim = 10 
-    Idiff_range = np.linspace(0, 4, nsim)
-    gss_range = np.linspace(g_min, g_max, nsim)
+    nsim = 20 
+    Idiff_range = np.linspace(0, 10, nsim)
+    gss_range = np.linspace(g_min, g_max, 5)
     parameters_combinations = [SimulationParameters(
         simulation_i=gss_range*nsim,
         n_iterations=5001,
@@ -38,7 +38,7 @@ def exercise7():
         ]
     plotting_ranges = (g_min, g_max, nsim, Idiff_range, gss_range)
     list__ranges = np.linspace(g_min, g_max, nsim)
-    idx, best_speed = vary_gss(parameters_combinations, plotting_ranges)
+    idx, best_speed = vary_gss_line(parameters_combinations, plotting_ranges)
     # for g, gss in enumerate(gss_range):
     #     for idiff, Idiff in enumerate(Idiff_range):
     #         print(f"Idiff: {Idiff}, gss: {gss}")
@@ -51,7 +51,7 @@ def exercise7_I():
     # Question B - Varying g_ss
     g_min = 0
     g_max = 15
-    nsim = 10 
+    nsim = 20 
     I_range = np.linspace(0, 30, nsim)
     gss_range = np.linspace(g_min, g_max, 5)
     parameters_combinations = [SimulationParameters(
@@ -69,7 +69,7 @@ def exercise7_I():
         ]
     plotting_ranges = (g_min, g_max, nsim, I_range, gss_range)
     list__ranges = np.linspace(g_min, g_max, nsim)
-    idx, best_speed = vary_gss(parameters_combinations, plotting_ranges)
+    idx, best_speed = vary_gss_line(parameters_combinations, plotting_ranges)
     # for g, gss in enumerate(gss_range):
     #     for idiff, Idiff in enumerate(Idiff_range):
     #         print(f"Idiff: {Idiff}, gss: {gss}")
@@ -295,11 +295,79 @@ def vary_gss(parameters, plotting_ranges, folder_path = "figures/",plot_path = '
     '''
     idx, best_speed = max(enumerate(forward_speed), key=lambda x: x[1]) # Find the index and value of the best speed
     return idx, best_speed
+def vary_gss_line(parameters, plotting_ranges, folder_path="figures/", plot_path='/Users/maxgrobbelaar/Documents/EPFL_Spring_2024/Computational Motor control/project 2/figures/exercise7/'):
+    os.makedirs(plot_path, exist_ok=True)
+    controller = run_multiple(parameters)
+    
+    g_min, g_max, nsim, Idiff_range, gss_range = plotting_ranges
+    
+    # Extracting data from the controller metrics
+    fspeed_values = np.array([controller[i].metrics['fspeed_cycle'] for i in range(len(controller))])
+    ptcc_values = np.array([controller[i].metrics['ptcc'] for i in range(len(controller))])
+    frequency_values = np.array([controller[i].metrics['frequency'] for i in range(len(controller))])
+    wavefrequency_values = np.array([controller[i].metrics['wavefrequency'] for i in range(len(controller))])
+    curvature_values = np.array([controller[i].metrics['curvature'] for i in range(len(controller))])
+    lateral_speed_values = np.array([controller[i].metrics['lspeed_cycle'] for i in range(len(controller))])
+    # Create subplots
+    fig, ax = plt.subplots(2, 1,figsize=(20, 16))
+    fig2, ax2 = plt.subplots(2, 1,figsize=(20, 16))
+
+    for i, gss in enumerate(gss_range):
+        fcycle_speed_values_gss = []
+        ptcc_values_gss = []
+        frequency_values_gss = []
+        wavefrequency_values_gss = []
+        curvature_values_gss = []
+        lateral_speed_values_gss = []
+        for j, I in enumerate(Idiff_range):
+            idx = i * len(Idiff_range) + j
+            fcycle_speed_values_gss.append(fspeed_values[idx])
+            ptcc_values_gss.append(ptcc_values[idx])
+            frequency_values_gss.append(frequency_values[idx])
+            wavefrequency_values_gss.append(wavefrequency_values[idx])
+            curvature_values_gss.append(curvature_values[idx])
+            lateral_speed_values_gss.append(lateral_speed_values[idx])
+        
+        # Plot forward speed for the current gss
+        ax[0].plot(Idiff_range, ptcc_values_gss, label=f"gss={gss}")
+        ax[1].plot(Idiff_range, fcycle_speed_values_gss, label=f"gss={gss}")
+
+        ax2[0].plot(Idiff_range, frequency_values_gss, label=f"gss={gss}")
+        ax2[1].plot(Idiff_range, wavefrequency_values_gss, label=f"gss={gss}")
+
+
+    #ax[0].set_xlabel('I_diff')
+    ax[0].set_ylabel('ptcc')
+    #ax[0].set_title('ptcc vs I_diff for different gss values')
+    ax[0].legend(fontsize='small')
+    ax[0].grid(True)
+
+    ax[1].set_xlabel('I')
+    ax[1].set_ylabel('Forward speed (m/s)')
+    #ax[1].set_title('Forward speed vs I_diff for different gss values')
+    #ax[1].legend(fontsize='small')
+    ax[1].grid(True)
+
+    fig.savefig(plot_path + 'fspeed_ptcc_vs_I.png')  # Save the figure
+
+    #ax2[0].set_xlabel('I diff')
+    ax2[0].set_ylabel('Frequency (Hz)')
+    #ax[0].set_title('ptcc vs I for different gss values')
+    ax2[0].legend(fontsize='small')
+    ax2[0].grid(True)
+
+    ax2[1].set_xlabel('I')
+    ax2[1].set_ylabel('Wave Frequency (-)')
+    #axs[1].set_title('Forward speed vs I for different gss values')
+    #axs[1].legend()
+    ax2[1].grid(True)
+    fig2.savefig(plot_path + 'frequency_wavefrequency_vs_I.png')  # Save the figure
+    plt.show()
 def exercise7_Idiff_plot_metrics():
     g_min = 0
     g_max = 15
     nsim = 20
-    Idiff_range = np.linspace(0, 4, nsim)
+    Idiff_range = np.linspace(0, 10, nsim)
     gss_range = np.linspace(g_min, g_max, 5)
     # create subplots
     fig, axs = plt.subplots(2, 1, figsize=(20, 20))
@@ -372,10 +440,10 @@ def exercise7_Idiff_plot_metrics():
 
 def exercise7_I_plot_metrics():
     g_min = 0
-    g_max = 15
+    g_max = 2
     nsim = 20
     I_range = np.linspace(0, 30, nsim)
-    gss_range = np.linspace(g_min, g_max, 5)
+    gss_range = np.linspace(g_min, g_max, 10)
     # create subplots
     fig, axs = plt.subplots(2, 1, figsize=(20, 20))
 
@@ -425,6 +493,8 @@ def exercise7_I_plot_metrics():
 
 
 if __name__ == '__main__':
+    #exercise7()
+    exercise7_I()
     #exercise7_I_plot_metrics()
-    exercise7_Idiff_plot_metrics()
+    #exercise7_Idiff_plot_metrics()
 
