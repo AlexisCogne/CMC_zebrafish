@@ -20,7 +20,7 @@ def exercise7():
     # Question B - Varying g_ss
     g_min = 0
     g_max = 15
-    nsim = 20 
+    nsim = 10 
     Idiff_range = np.linspace(0, 10, nsim)
     gss_range = np.linspace(g_min, g_max, 5)
     parameters_combinations = [SimulationParameters(
@@ -329,21 +329,21 @@ def vary_gss_line(parameters, plotting_ranges, folder_path="figures/", plot_path
             lateral_speed_values_gss.append(lateral_speed_values[idx])
         
         # Plot forward speed for the current gss
-        ax[0].plot(Idiff_range, ptcc_values_gss, label=f"gss={gss}")
-        ax[1].plot(Idiff_range, fcycle_speed_values_gss, label=f"gss={gss}")
+        ax[0].plot(Idiff_range, curvature_values_gss, label=f"gss={gss}")
+        ax[1].plot(Idiff_range, lateral_speed_values_gss, label=f"gss={gss}")
 
         ax2[0].plot(Idiff_range, frequency_values_gss, label=f"gss={gss}")
         ax2[1].plot(Idiff_range, wavefrequency_values_gss, label=f"gss={gss}")
 
 
     #ax[0].set_xlabel('I_diff')
-    ax[0].set_ylabel('ptcc')
+    ax[0].set_ylabel('Curvature')
     #ax[0].set_title('ptcc vs I_diff for different gss values')
     ax[0].legend(fontsize='small')
     ax[0].grid(True)
 
-    ax[1].set_xlabel('I')
-    ax[1].set_ylabel('Forward speed (m/s)')
+    ax[1].set_xlabel('I diff')
+    ax[1].set_ylabel('Lateral speed (m/s)')
     #ax[1].set_title('Forward speed vs I_diff for different gss values')
     #ax[1].legend(fontsize='small')
     ax[1].grid(True)
@@ -356,7 +356,7 @@ def vary_gss_line(parameters, plotting_ranges, folder_path="figures/", plot_path
     ax2[0].legend(fontsize='small')
     ax2[0].grid(True)
 
-    ax2[1].set_xlabel('I')
+    ax2[1].set_xlabel('I diff')
     ax2[1].set_ylabel('Wave Frequency (-)')
     #axs[1].set_title('Forward speed vs I for different gss values')
     #axs[1].legend()
@@ -493,8 +493,8 @@ def exercise7_I_plot_metrics():
 
 
 if __name__ == '__main__':
-    #exercise7()
-    exercise7_I()
+    exercise7()
+    #exercise7_I()
     #exercise7_I_plot_metrics()
     #exercise7_Idiff_plot_metrics()
 

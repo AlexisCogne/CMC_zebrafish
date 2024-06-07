@@ -4,11 +4,12 @@ from simulation_parameters import SimulationParameters
 import os
 import farms_pylog as pylog
 import numpy as np
-from plotting_common import *
+from plotting_common import  plot_trajectory, plot_left_right
 import matplotlib.pyplot as plt
 
 
 def exercise3(**kwargs):
+
 
     pylog.info("Ex 3")
     pylog.info("Implement exercise 3")
@@ -52,6 +53,7 @@ def exercise3(**kwargs):
         right_idx,
         cm="jet",
         offset=0.1)
+
     
     #printing the metrics
     print(f'Parameters: frequency={np.round(0.5*controller.metrics["frequency"],5)}, Amp={np.round(0.5*controller.metrics["amp"],5)}, wavefrequency={np.round(controller.metrics["wavefrequency"],5)}')
