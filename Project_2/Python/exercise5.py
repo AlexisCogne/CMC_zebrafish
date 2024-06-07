@@ -21,7 +21,7 @@ def exercise5_performance(**kwargs):
 
     all_pars = SimulationParameters(
         n_iterations=5001,
-        log_path=log_path,
+        log_path="",
         compute_metrics=3,
         return_network=True,
         **kwargs
@@ -155,7 +155,7 @@ def exercise5_additional_performance(**kwargs):
     curv_values = [controller.metrics['curvature'] for controller in controllers]
     print("Curvature values: ", curv_values)
     plot_metric_vs_parameter(Idiff_range, curv_values, 'Idiff', "curvature")
-    plt.ylabel()
+    #plt.ylabel()
     #ptcc
     ptcc_values = [controller.metrics['ptcc'] for controller in controllers]
     print("PTCC values: ", ptcc_values)
@@ -355,13 +355,13 @@ def calculate_energy(joints_data, joint_angles, times):
 if __name__ == '__main__':
 
     #-----run the simulation for default parameters, allowing to visualize the swimming behavior and to test its performance
-    #exercise5_performance(headless=False)
+    exercise5_performance(headless=False)
 
     #-----test different Idiffs and obtain the performance: lateral speeds and curvatures associated
     exercise5_turning_performance()
 
     #-----test different Idiffs and obtain additional (not explicitly requested) performance: ptcc, wavefrequency and rotational energy
-    #exercise5_additional_performance()
+    exercise5_additional_performance()
 
     #-----check that turning radius match curvature expected
     figname="ex5"
@@ -370,7 +370,6 @@ if __name__ == '__main__':
     exercise5_radius_check(fig, Idiffs)
 
     #-----plot swimming trajectory and neuron activities
-    #plot_swimming_behavior(specific_Idiff=4)
-    #plot_swimming_behavior(specific_Idiff = 4)
+    plot_swimming_behavior(specific_Idiff=4)
 
     plt.show()

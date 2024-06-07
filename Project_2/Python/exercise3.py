@@ -1,5 +1,6 @@
 
-from util.run_open_loop import run_single
+#from util.run_open_loop import run_single
+from util.run_closed_loop import run_single
 from simulation_parameters import SimulationParameters
 import os
 import farms_pylog as pylog
