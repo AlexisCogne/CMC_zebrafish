@@ -26,7 +26,7 @@ def exercise_single(**kwargs):
     controller = run_single(
         all_pars
     )
-
+    """
     pylog.info("Plotting the result")
 
     left_idx = controller.muscle_l
@@ -66,7 +66,7 @@ def exercise_single(**kwargs):
         colors="green",
         ylabel="link y-velocities",
         lw=1
-    )
+    )"""
 
 
 if __name__ == '__main__':

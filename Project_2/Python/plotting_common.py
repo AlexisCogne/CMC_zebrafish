@@ -27,7 +27,7 @@ def plot_time_histories(
     title = kwargs.pop('title', None)
     labels = kwargs.pop('labels', None)
     colors = kwargs.pop('colors', None)
-    xlim = kwargs.pop('xlim', [time[0], time[-1]])
+    xlim = kwargs.pop('xlim', [time[0], time[-1]]) ## Updated by alexis to have plots starting from the value we want
     ylim = kwargs.pop('ylim', None)
     offset = kwargs.pop('offset', 0)
     savepath = kwargs.pop('savepath', None)
@@ -37,6 +37,9 @@ def plot_time_histories(
     xticks_labels = kwargs.pop('xticks_labels', None)
     yticks_labels = kwargs.pop('xticks_labels', None)
     closefig = kwargs.pop('closefig', True)
+    ncol = kwargs.pop('ncol', 1) ## Added by alexis for separate columns in plot
+    loc = kwargs.pop('loc', 0) ## Added by alexis for separate columns in plot
+    specific_labels = kwargs.pop('specific_labels', None) ## Added by alexis for showing only certain labels
 
     n_signals = state.shape[1]
 
@@ -66,6 +69,11 @@ def plot_time_histories(
     for (idx, vector) in enumerate(state.transpose()):
         if not labels:
             label = None
+        elif specific_labels is not None:## Added by alexis
+            if idx in specific_labels:  # Check if the current index should be labeled
+                label = labels[idx]  # Assign label from the labels list
+            else:
+                label = None  # If not, do not label
         else:
             label = labels[idx]
         plt.plot(
@@ -75,7 +83,7 @@ def plot_time_histories(
             color=colors[idx],
             linewidth=lw)
     if labels:
-        plt.legend()
+        plt.legend(ncol=ncol, loc = loc) ## Added by alexis for separate columns in plot
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.xlim(xlim)
@@ -108,7 +116,7 @@ def plot_time_histories_multiple_windows(
     title = kwargs.pop('title', None)
     labels = kwargs.pop('labels', None)
     colors = kwargs.pop('colors', None)
-    xlim = kwargs.pop('xlim', [0, time[-1]])
+    xlim = kwargs.pop('xlim', [time[0], time[-1]])
     ylim = kwargs.pop('ylim', None)
     savepath = kwargs.pop('savepath', None)
     lw = kwargs.pop('lw', 1.0)
@@ -151,6 +159,76 @@ def plot_time_histories_multiple_windows(
         if closefig:
             plt.close()
 
+
+def plot_time_histories_multiple_windows_alexis(
+    time: np.array,
+    state: np.array,
+    **kwargs,
+):
+    """
+    Plot time histories of a vector of states on multiple subplots
+    time: array of times
+    state: array of states with shape (niterations,nvar)
+    kwargs: optional plotting properties (see below)
+    """
+
+    xlabel = kwargs.pop('xlabel', "Time [s]")
+    #ylabel = kwargs.pop('ylabel', "Activity [-]")
+    ylabels = kwargs.pop('ylabels', None)
+    title = kwargs.pop('title', None)
+    labels = kwargs.pop('labels', None)
+    colors = kwargs.pop('colors', None)
+    xlim = kwargs.pop('xlim', [time[0], time[-1]])
+    ylim = kwargs.pop('ylim', None)
+    savepath = kwargs.pop('savepath', None)
+    lw = kwargs.pop('lw', 1.0)
+    xticks = kwargs.pop('xticks', None)
+    yticks = kwargs.pop('yticks', None)
+    xticks_labels = kwargs.pop('xticks_labels', None)
+    yticks_labels = kwargs.pop('xticks_labels', None)
+    closefig = kwargs.pop('closefig', True)
+
+    if isinstance(colors, list) and len(colors) == state.shape[1]:
+        colors = colors
+    elif not isinstance(colors, list):
+        colors = [colors for _ in range(state.shape[1])]
+    else:
+        raise Exception("Color list not a vecotor of the correct size!")
+
+    n = state.shape[1]
+    if title:
+        plt.figure(title)
+    for (idx, vector) in enumerate(state.transpose()):
+        if not labels:
+            label = None
+        else:
+            label = labels[idx]
+        plt.subplot(n, 1, idx+1)
+        plt.plot(time, vector, label=label, color=colors[idx], linewidth=lw)
+        if ylabels is not None:
+            ylabel = ylabels[idx]
+            plt.ylabel(f"Cell #{ylabel}", rotation = 0, labelpad = 50)
+        plt.xlim(xlim)
+        plt.ylim(ylim)
+        if yticks is None:  # If yticks are not provided, set them to bottom and middle
+            y_min, y_max = plt.ylim()
+            plt.yticks([y_min, (y_max + y_min) / 2])
+    if labels:
+        plt.legend()
+    plt.xlabel(xlabel)
+    plt.subplots_adjust(top=0.95)
+    plt.subplots_adjust(bottom=0.1)
+    plt.subplots_adjust(hspace=0.1) 
+    plt.subplots_adjust(left=0.2)
+    plt.grid(False)
+    if xticks:
+        plt.xticks(xticks, labels=xticks_labels)
+    if yticks:
+        plt.yticks(yticks, labels=yticks_labels)
+    if savepath:
+        plt.savefig(savepath)
+        if closefig:
+            plt.close()
 
 def plot_2d(results, labels, n_data=300, log=False, cmap=None):
     """Plot result
@@ -292,3 +370,51 @@ def save_figures(**kwargs):
     for name in figures:
         save_figure(name, extensions=kwargs.pop('extensions', ['pdf']))
 
+def plot_metric_vs_parameter(parameter_values, metric_values, parameter_label, metric_label, range_values=[], label=None, save_path=None, color='b'):
+    """
+    Plot a metric against a parameter.
+
+    Parameters:
+    - parameter_values: Values of the parameter
+    - metric_values: Values of the metric
+    - parameter_label: Label for the parameter axis
+    - metric_label: Label for the metric axis
+    - label: Label for the line plot (optional)
+    - save_path: Path to save the plot. If None, the plot will not be saved.
+    """
+    if len(range_values)>0:
+        range_start = range_values[0]
+        range_end = range_values[1]
+        #make array of indices in range
+        indices = [i for i in range(range_start, range_end)]
+        plt.plot([parameter_values[i] for i in indices], [metric_values[i] for i in indices], label=label, color=color)
+        plt.xlabel(parameter_label)
+        if metric_label == 'Frequency':
+            plt.ylabel(metric_label + ' [Hz]')
+        elif metric_label == 'lspeed' or metric_label == 'fspeed':
+            plt.ylabel(metric_label + ' [m/s]')
+        else:
+            plt.ylabel(metric_label)
+        #plt.title(f"{metric_label} vs {parameter_label}")
+        plt.grid(True)
+        if label:
+            plt.legend()
+        if save_path:
+            plt.savefig(save_path)
+        plt.show()
+    else:
+        plt.plot(parameter_values, metric_values, label=label, color=color)
+        plt.xlabel(parameter_label)
+        if metric_label == 'Frequency':
+            plt.ylabel(metric_label + ' [Hz]')
+        elif metric_label == 'lspeed' or metric_label == 'fspeed':
+            plt.ylabel(metric_label + ' [m/s]')
+        else:
+            plt.ylabel(metric_label)
+        #plt.title(f"{metric_label} vs {parameter_label}")
+        plt.grid(True)
+        if label:
+            plt.legend()
+        if save_path:
+            plt.savefig(save_path)
+        plt.show()
