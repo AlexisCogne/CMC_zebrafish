@@ -1,2 +1,2 @@
-# CMC_zebrafish
-Git for the Zebrafish Projects 1 & 2 in Computational Motor Control
+# Computational Motor Control Project
+Implementation of a firing rate controller and exploration of the role of stretch feedback and noise on the animal’s swimming behavior.
